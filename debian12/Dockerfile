@@ -17,7 +17,27 @@ COPY scripts /opt/scripts
 COPY userscripts /opt/userscripts
 
 # Set up ioBroker
-RUN apt-get update && apt-get upgrade -y 
+RUN apt-get update && apt-get upgrade -y \
+    # Install prerequisites
+    && apt-get install -q -y --no-install-recommends \
+    apt-utils \
+    ca-certificates \
+    cifs-utils \
+    curl \
+    gnupg \
+    gosu \
+    iputils-ping \
+    jq \
+    libatomic1 \
+    locales \
+    nfs-common \
+    procps \
+    python3 \
+    python3-dev \
+    tar \
+    tzdata \
+    udev \
+    wget 
 
 # Default environment variables
 ENV BUILD="${DATI}" \
