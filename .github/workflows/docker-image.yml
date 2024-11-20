@@ -25,4 +25,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: MarcBerg/iobroker:latest
+          tags: marcberg/iobroker:latest
