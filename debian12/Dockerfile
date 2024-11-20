@@ -37,7 +37,24 @@ RUN apt-get update && apt-get upgrade -y \
     tar \
     tzdata \
     udev \
-    wget 
+    wget \
+    # Generating locales
+    && sed -i 's/^# *\(de_DE.UTF-8\)/\1/' /etc/locale.gen \
+    && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
+    && locale-gen \
+    # Prepare .docker_config
+    && mkdir /opt/.docker_config \
+    && echo "starting" > /opt/.docker_config/.healthcheck \
+    && echo "${VERSION}" > /opt/.docker_config/.thisisdocker \
+    && echo "${DATI}" > /opt/.docker_config/.build \
+    && echo "true" > /opt/.docker_config/.first_run \
+    # Prepare old .docker_config (needed until changed in iobroker)
+    && mkdir /opt/scripts/.docker_config \
+    && echo "${VERSION}" > /opt/scripts/.docker_config/.thisisdocker \
+    # Run iobroker installer
+    && curl -sL https://iobroker.net/install.sh -o install.sh \
+    && sed -i 's/NODE_MAJOR=[0-9]\+/NODE_MAJOR=${NODE}/' install.sh \
+    && sed -i 's|NODE_JS_BREW_URL=.*|NODE_JS_BREW_URL="https://nodejs.org"|' install.sh
 
 # Default environment variables
 ENV BUILD="${DATI}" \
