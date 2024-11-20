@@ -8,7 +8,7 @@ LABEL org.opencontainers.image.title="Official ioBroker Docker Image" \
       org.opencontainers.image.source="https://github.com/buanet/ioBroker.docker" \
       org.opencontainers.image.base.name="debian:bookworm-slim" \
       org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.created="${DATI}"
+      org.opencontainers.image.created="${DATI}" 
 
 ENV DEBIAN_FRONTEND="noninteractive"
 
