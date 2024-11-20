@@ -11,6 +11,7 @@ LABEL org.opencontainers.image.title="Official ioBroker Docker Image" \
       org.opencontainers.image.created="${DATI}"
 
 ENV DEBIAN_FRONTEND="noninteractive"
+ENV NODE=20
 
 # Copy files
 COPY scripts /opt/scripts
