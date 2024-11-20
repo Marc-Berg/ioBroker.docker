@@ -22,7 +22,11 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
-          context: .
+          context: ./debian12
           file: ./debian12/Dockerfile
           push: true
+          platforms: |
+            linux/amd64
+            linux/arm64/v8
+            linux/arm/v7
           tags: marcberg/iobroker:latest
