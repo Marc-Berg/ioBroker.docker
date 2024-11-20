@@ -23,6 +23,6 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          file: ./Dockerfile
+          file: ./debian12/Dockerfile
           push: true
           tags: marcberg/iobroker:latest
