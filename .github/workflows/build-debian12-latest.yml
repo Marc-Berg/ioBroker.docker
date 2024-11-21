@@ -4,7 +4,7 @@ name: Build Debian 12 Image (latest)
 on:
   push:
     branches:
-      - main
+      - disabled
       
 
 jobs:
