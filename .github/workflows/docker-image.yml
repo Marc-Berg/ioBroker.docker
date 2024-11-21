@@ -34,7 +34,7 @@ jobs:
           push: true
           platforms: |
             linux/amd64
-#            linux/arm64/v8
+            linux/arm64/v8
 #            linux/arm/v7
           tags: marcberg/iobroker:latest,
                 marcberg/iobroker:v10.0.0
