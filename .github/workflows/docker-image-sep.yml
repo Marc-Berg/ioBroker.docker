@@ -3,7 +3,7 @@ name: Build and Push Docker Image
 on:
   push:
     branches:
-      - disabled
+      - main
 
 jobs:
   build_arm_v7:
