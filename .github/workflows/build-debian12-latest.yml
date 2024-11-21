@@ -20,7 +20,7 @@ jobs:
 
       - name: Set job variables
         run: |
-          VERSION="$(cat .VERSION)"
+          VERSION="10.0.0"
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           DATI="$(date --rfc-3339=seconds | sed 's/ /T/')"
           # Log output and export as Github environment variable
