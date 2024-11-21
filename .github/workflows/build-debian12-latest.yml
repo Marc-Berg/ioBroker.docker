@@ -21,7 +21,7 @@ jobs:
       - name: Set job variables
         run: |
           VERSION="10.0.0"
-          MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
+          MAJORVERSION="10"
           DATI="$(date --rfc-3339=seconds | sed 's/ /T/')"
           # Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
