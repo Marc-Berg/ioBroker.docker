@@ -1,9 +1,9 @@
-name: Build and Push Docker Image
+name: Build and Push Docker Image 3
 
 on:
   push:
     branches:
-      - disabled
+      - main
 
 jobs:
   build:
@@ -36,5 +36,5 @@ jobs:
             linux/arm/v7
             linux/amd64
             linux/arm64/v8
-          tags: marcberg/iobroker:latest,
-                marcberg/iobroker:v10.0.0
+          tags: marcberg/iobroker3:latest,
+                marcberg/iobroker3:v10.0.0
