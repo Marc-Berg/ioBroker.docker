@@ -19,22 +19,26 @@ jobs:
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v3.7.1
-      
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3.3.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6.6.1
-        with:
-          context: ./debian12
-          file: ./debian12/Dockerfile
-          push: true
-          platforms: |
-            linux/arm/v7
-            linux/amd64
-            linux/arm64/v8
-          tags: marcberg/iobroker3:latest,
-                marcberg/iobroker3:v10.0.0
+      - name: Build and push Docker image for arm/v7
+        run: |
+          docker buildx build --platform linux/arm/v7 --push --tag marcberg/iobroker3:arm_v7 ./debian12
+
+      - name: Build and push Docker image for amd64
+        run: |
+          docker buildx build --platform linux/amd64 --push --tag marcberg/iobroker3:amd64 ./debian12
+
+      - name: Build and push Docker image for arm64/v8
+        run: |
+          docker buildx build --platform linux/arm64/v8 --push --tag marcberg/iobroker3:arm64_v8 ./debian12
+
+      - name: Create and push multi-platform image
+        run: |
+          docker buildx imagetools create -t marcberg/iobroker3:latest marcberg/iobroker3:arm_v7 marcberg/iobroker3:amd64 marcberg/iobroker3:arm64_v8
+          docker buildx imagetools create -t marcberg/iobroker3:v10.0.0 marcberg/iobroker3:arm_v7 marcberg/iobroker3:amd64 marcberg/iobroker3:arm64_v8
