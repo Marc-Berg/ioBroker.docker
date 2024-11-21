@@ -51,9 +51,9 @@ RUN apt-get update && apt-get upgrade -y \
     && echo "true" > /opt/.docker_config/.first_run \
     # Prepare old .docker_config (needed until changed in iobroker)
     && mkdir /opt/scripts/.docker_config \
-    && echo "${VERSION}" > /opt/scripts/.docker_config/.thisisdocker \
+    && echo "${VERSION}" > /opt/scripts/.docker_config/.thisisdocker
     # Run iobroker installer
-    && curl -sL https://iobroker.net/install.sh -o install.sh \
+    RUN curl -sL https://iobroker.net/install.sh -o install.sh \
     && sed -i 's/NODE_MAJOR=[0-9]\+/NODE_MAJOR=${NODE}/' install.sh \
     && sed -i 's|NODE_JS_BREW_URL=.*|NODE_JS_BREW_URL="https://nodejs.org"|' install.sh \
     && bash install.sh \
