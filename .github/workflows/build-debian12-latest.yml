@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Fetch latest release tag
         run: |
-          LATESTRELEASE="$(curl -sL https://api.github.com/repos/buanet/ioBroker.docker/releases/latest | jq -r '.tag_name')"
+          LATESTRELEASE="v10.0.0"
           echo "Latest release tag : $LATESTRELEASE"
           echo "RELEASE_TAG=$LATESTRELEASE" >> $GITHUB_ENV
 
@@ -63,7 +63,6 @@ jobs:
             linux/arm/v7
           tags: |
             marcberg/iobroker:latest,
-            marcberg/iobroker:${{ env.majorversion }},
-            marcberg/iobroker:${{ env.version }}
+            marcberg/iobroker:v10.0.0
           provenance: false
           outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=Official Docker image for ioBroker smarthome software (https://www.iobroker.net)
