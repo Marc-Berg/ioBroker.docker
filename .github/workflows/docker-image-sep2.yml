@@ -94,11 +94,12 @@ jobs:
      
      - name: Create and push multi-platform image
        run: |
-         docker buildx imagetools create -t marcberg/iobroker2:latest \
-           $(docker images -q arm_v7_image) \
-           $(docker images -q amd64_image) \
-           $(docker images -q arm64_v8_image)
-         docker buildx imagetools create -t marcberg/iobroker2:v10.0.0 \
-           $(docker images -q arm_v7_image) \
-           $(docker images -q amd64_image) \
-           $(docker images -q arm64_v8_image)
+        docker buildx imagetools create -t marcberg/iobroker2:latest \
+        $(docker images -q arm_v7_image) \
+        $(docker images -q amd64_image) \
+        $(docker images -q arm64_v8_image)
+
+        docker buildx imagetools create -t marcberg/iobroker2:v10.0.0 \
+          $(docker images -q arm_v7_image) \
+          $(docker images -q amd64_image) \
+          $(docker images -q arm64_v8_image)
