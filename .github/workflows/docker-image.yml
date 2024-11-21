@@ -26,17 +26,17 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build and push Docker image for arm/v7
+      - name: Build Docker image for arm/v7
         run: |
-          docker buildx build --platform linux/arm/v7 --push --tag marcberg/iobroker3:arm_v7 ./debian12
+          docker buildx build --platform linux/arm/v7 --load --tag marcberg/iobroker3:arm_v7 ./debian12
 
-      - name: Build and push Docker image for amd64
+      - name: Build Docker image for amd64
         run: |
-          docker buildx build --platform linux/amd64 --push --tag marcberg/iobroker3:amd64 ./debian12
+          docker buildx build --platform linux/amd64 --load --tag marcberg/iobroker3:amd64 ./debian12
 
-      - name: Build and push Docker image for arm64/v8
+      - name: Build Docker image for arm64/v8
         run: |
-          docker buildx build --platform linux/arm64/v8 --push --tag marcberg/iobroker3:arm64_v8 ./debian12
+          docker buildx build --platform linux/arm64/v8 --load --tag marcberg/iobroker3:arm64_v8 ./debian12
 
       - name: Create and push multi-platform image
         run: |
