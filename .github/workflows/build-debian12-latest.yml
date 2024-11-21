@@ -63,25 +63,22 @@ jobs:
           username: ${{ secrets.PACKAGES_USER }}
           password: ${{ secrets.PACKAGES_PASS }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6.6.1
-        with:
-          context: ./debian12
-          file: ./debian12/Dockerfile
-          push: true
-          platforms: |
-            linux/amd64
-            linux/arm64/v8
-            linux/arm/v7
-          tags: |
-            buanet/iobroker:latest,
-            buanet/iobroker:${{ env.majorversion }},
-            buanet/iobroker:${{ env.version }},
-            ghcr.io/buanet/iobroker:latest,
-            ghcr.io/buanet/iobroker:${{ env.majorversion }},
-            ghcr.io/buanet/iobroker:${{ env.version }}
-          provenance: false
-          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=Official Docker image for ioBroker smarthome software (https://www.iobroker.net)
+      - name: Build and load Docker image for arm/v7
+        run: |
+          docker buildx build --platform linux/arm/v7 --load --tag buanet/iobroker:arm_v7 ./debian12
+
+      - name: Build and load Docker image for amd64
+        run: |
+          docker buildx build --platform linux/amd64 --load --tag buanet/iobroker:amd64 ./debian12
+
+      - name: Build and load Docker image for arm64/v8
+        run: |
+          docker buildx build --platform linux/arm64/v8 --load --tag buanet/iobroker:arm64_v8 ./debian12
+
+      - name: Create and push multi-platform image
+        run: |
+          docker buildx build --platform linux/arm/v7,linux/amd64,linux/arm64/v8 --push --tag buanet/iobroker:latest --tag buanet/iobroker:${{ env.majorversion }} --tag buanet/iobroker:${{ env.version }} ./debian12
+          docker buildx build --platform linux/arm/v7,linux/amd64,linux/arm64/v8 --push --tag ghcr.io/buanet/iobroker:latest --tag ghcr.io/buanet/iobroker:${{ env.majorversion }} --tag ghcr.io/buanet/iobroker:${{ env.version }} ./debian12
 
   build-latest-for-iobroker:
     name: Build latest image for iobroker
@@ -132,19 +129,18 @@ jobs:
           username: ${{ secrets.DOCKER_USER_IOB }}
           password: ${{ secrets.DOCKER_PASS_IOB }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6.6.1
-        with:
-          context: ./debian12
-          file: ./debian12/Dockerfile
-          push: true
-          platforms: |
-            linux/amd64
-            linux/arm64/v8
-            linux/arm/v7
-          tags: |
-            iobroker/iobroker:latest,
-            iobroker/iobroker:${{ env.majorversion }},
-            iobroker/iobroker:${{ env.version }},
-          provenance: false
-          outputs: type=image,name=target,annotation-index.org.opencontainers.image.description=Official Docker image for ioBroker smarthome software (https://www.iobroker.net)
+      - name: Build and load Docker image for arm/v7
+        run: |
+          docker buildx build --platform linux/arm/v7 --load --tag iobroker/iobroker:arm_v7 ./debian12
+
+      - name: Build and load Docker image for amd64
+        run: |
+          docker buildx build --platform linux/amd64 --load --tag iobroker/iobroker:amd64 ./debian12
+
+      - name: Build and load Docker image for arm64/v8
+        run: |
+          docker buildx build --platform linux/arm64/v8 --load --tag iobroker/iobroker:arm64_v8 ./debian12
+
+      - name: Create and push multi-platform image
+        run: |
+          docker buildx build --platform linux/arm/v7,linux/amd64,linux/arm64/v8 --push --tag iobroker/iobroker:latest --tag iobroker/iobroker:${{ env.majorversion }} --tag iobroker/iobroker:${{ env.version }} ./debian12
