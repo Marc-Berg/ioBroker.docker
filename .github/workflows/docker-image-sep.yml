@@ -94,6 +94,8 @@ jobs:
           docker buildx imagetools create -t marcberg/iobroker:latest marcberg/iobroker:arm_v7 marcberg/iobroker:amd64 marcberg/iobroker:arm64_v8
           docker buildx imagetools create -t marcberg/iobroker:v10.0.0 marcberg/iobroker:arm_v7 marcberg/iobroker:amd64 marcberg/iobroker:arm64_v8
           
-      - name: Remove individual platform images
+      - name: Remove individual platform images from Docker Hub
         run: |
-          docker rmi marcberg/iobroker:arm_v7 marcberg/iobroker:amd64 marcberg/iobroker:arm64_v8
+          docker image rm -f marcberg/iobroker:arm_v7 || true
+          docker image rm -f marcberg/iobroker:amd64 || true
+          docker image rm -f marcberg/iobroker:arm64_v8 || true
