@@ -19,24 +19,6 @@ jobs:
           echo "RELEASE_TAG=$LATESTRELEASE" >> $GITHUB_ENV
 
       - name: Set job variables
-        run: |
-          VERSION="10.0.0"
-          MAJORVERSION="10"
-          DATI="$(date --rfc-3339=seconds | sed 's/ /T/')"
-          # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
-          echo "[LOG] Image Version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
-          echo "[LOG] Major Image Version: $MAJORVERSION"
-          echo "majorversion=$MAJORVERSION" >> $GITHUB_ENV
-          echo "[LOG] Buildnumber/Timestamp: $DATI"
-          echo "dati=$DATI" >> $GITHUB_ENV
-          # Set values in iobroker_startup.sh
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$DATI/" ./debian12/scripts/iobroker_startup.sh > ./debian12/scripts/iobroker_startup.tmp
-          mv -f ./debian12/scripts/iobroker_startup.tmp ./debian12/scripts/iobroker_startup.sh
-          # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$DATI/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION }}/" ./debian12/Dockerfile > ./debian12/Dockerfile.tmp 
-          mv -f ./debian12/Dockerfile.tmp ./debian12/Dockerfile
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.2.0
