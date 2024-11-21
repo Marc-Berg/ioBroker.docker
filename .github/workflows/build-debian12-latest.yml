@@ -2,9 +2,9 @@
 name: Build Debian 12 Image (latest) 
 
 on:
-  release:
-    types: [released]
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
   build-latest-for-buanet:
