@@ -2,7 +2,7 @@ name: Version Checks
 
 on:
   schedule:
-    - cron: '42 23 * * *'
+    - cron: '49 09 * * *'
   workflow_dispatch:
 
 jobs:
