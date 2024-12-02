@@ -54,8 +54,8 @@ jobs:
       - name: Commit latest release version
         if: steps.git-check.outputs.modified == 'true'
         run: |
-          git config --global user.name 'buanet'
-          git config --global user.email 'info@buanet.de'
+          git config --global user.name 'Marc-Berg'
+          git config --global user.email 'info@yahoo.de'
           git commit -am "new ioBroker versions"
           git push
 
