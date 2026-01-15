@@ -52,6 +52,9 @@ RUN apt-get update && apt-get upgrade -y \
     # Prepare old .docker_config (needed until changed in iobroker)
     && mkdir /opt/scripts/.docker_config \
     && echo "v11.0.1" > /opt/scripts/.docker_config/.thisisdocker \
+    # Clean up existing UID/GID 1000 from node base image
+    && if id -u 1000 >/dev/null 2>&1; then userdel -r $(id -un 1000) 2>/dev/null || true; fi \
+    && if getent group 1000 >/dev/null 2>&1; then groupdel $(getent group 1000 | cut -d: -f1) 2>/dev/null || true; fi \
     # Run iobroker installer
     && curl -sL https://iobroker.net/install.sh -o install.sh \
     && bash install.sh \
@@ -61,9 +64,7 @@ RUN apt-get update && apt-get upgrade -y \
     # Backup initial ioBroker and userscript folder
     && tar -cf /opt/initial_iobroker.tar /opt/iobroker \
     && tar -cf /opt/initial_userscripts.tar /opt/userscripts \
-    # Setting up iobroker-user (node base image already has node user with UID 1000)
-    && if id -u 1000 >/dev/null 2>&1; then userdel -r $(id -un 1000); fi \
-    && if getent group 1000 >/dev/null 2>&1; then groupdel $(getent group 1000 | cut -d: -f1); fi \
+    # Setting up iobroker-user
     && chsh -s /bin/bash iobroker \
     && usermod --home /opt/iobroker iobroker \
     && usermod -u 1000 iobroker \

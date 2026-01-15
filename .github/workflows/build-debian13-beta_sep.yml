@@ -17,7 +17,7 @@ jobs:
       - name: Fetch prerelease tag
         id: fetch-prerelease-tag
         run: |
-          PRERELEASE_TAG=$(curl -sL "https://api.github.com/repos/buanet/ioBroker.docker/releases" | jq -r '[.[] | select(.prerelease)][0].tag_name')
+          PRERELEASE_TAG=$(curl -sL "https://api.github.com/repos/${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}/releases" | jq -r '[.[] | select(.prerelease)][0].tag_name')
           if [ -z "$PRERELEASE_TAG" ]; then
             echo "[LOG] No prerelease found!" >&2
             exit 1
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: 'buanet/ioBroker.docker'
+          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
           ref: ${{ env.RELEASE_TAG }}
 
       - name: Generate build number
@@ -95,8 +95,8 @@ jobs:
           push: true
           platforms: linux/arm/v7
           tags: |
-            buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7,
-            ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7,
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7,
+            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7,
 
   build-beta-arm64v8-recommended-node:
     name: Build beta armv64v8 image with recommended node version
@@ -106,7 +106,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: 'buanet/ioBroker.docker'
+          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -154,8 +154,8 @@ jobs:
           push: true
           platforms: linux/arm64/v8
           tags: |
-            buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8,
-            ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8,
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8,
+            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8,
 
   build-beta-amd64-recommended-node:
     name: Build beta amd64 image with recommended node version
@@ -165,7 +165,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: 'buanet/ioBroker.docker'
+          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -210,8 +210,8 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64,
-            ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64,
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64,
+            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64,
 
   create-multiarch-image-with-recommended-node:
     name: Create multiarch image with recommended node version
@@ -250,12 +250,12 @@ jobs:
 
       - name: Create and push multi-platform image
         run: |
-          docker buildx imagetools create -t buanet/iobroker:beta buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7 buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8 buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t ghcr.io/buanet/iobroker:beta ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7 ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t buanet/iobroker:${{ env.version }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7 buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8 buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t ghcr.io/buanet/iobroker:${{ env.version }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7 ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t buanet/iobroker:${{ env.version }}-build.${{ env.build }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7 buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8 buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7 ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64
+          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:beta ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
+          docker buildx imagetools create -t ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:beta ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7 ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
+          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
+          docker buildx imagetools create -t ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7 ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
+          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
+          docker buildx imagetools create -t ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7 ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
 
 ### experimental node version
 
@@ -267,7 +267,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: 'buanet/ioBroker.docker'
+          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -315,8 +315,8 @@ jobs:
           push: true
           platforms: linux/arm/v7
           tags: |
-            buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-            ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
 
   build-beta-arm64v8-experimental-node:
     name: Build beta armv64v8 image with experimental node version
@@ -326,7 +326,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: 'buanet/ioBroker.docker'
+          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -374,8 +374,8 @@ jobs:
           push: true
           platforms: linux/arm64/v8
           tags: |
-            buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-            ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
 
   build-beta-amd64-experimental-node:
     name: Build beta amd64 image with experimental node version
@@ -385,7 +385,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: 'buanet/ioBroker.docker'
+          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -430,8 +430,8 @@ jobs:
           push: true
           platforms: linux/amd64
           tags: |
-            buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-            ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
 
   create-multiarch-image-with-experimental-node:
     name: Create multiarch image with experimental node version
@@ -441,7 +441,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: 'buanet/ioBroker.docker'
+          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -470,9 +470,9 @@ jobs:
 
       - name: Create and push multi-platform image
         run: |
-          docker buildx imagetools create -t buanet/iobroker:beta-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ghcr.io/buanet/iobroker:beta-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t buanet/iobroker:${{ env.version }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ghcr.io/buanet/iobroker:${{ env.version }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t buanet/iobroker:${{ env.version }}-build.${{ env.build }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/buanet/iobroker:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:beta-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+          docker buildx imagetools create -t ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:beta-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+          docker buildx imagetools create -t ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+          docker buildx imagetools create -t ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
