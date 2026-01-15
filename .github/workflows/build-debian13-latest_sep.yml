@@ -67,7 +67,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_24 }}"
+          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Major Image Version: $MAJORVERSION"
@@ -78,7 +78,7 @@ jobs:
           sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
           # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION_24 }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
+          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
           mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
 
       - name: Set up QEMU
@@ -129,7 +129,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_24 }}"
+          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Major Image Version: $MAJORVERSION"
@@ -140,7 +140,7 @@ jobs:
           sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
           # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION_24 }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
+          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
           mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
 
       - name: Set up QEMU
@@ -191,7 +191,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_24 }}"
+          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Major Image Version: $MAJORVERSION"
@@ -202,7 +202,7 @@ jobs:
           sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
           # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION_24 }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
+          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
           mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
 
       - name: Set up Docker Buildx
@@ -250,7 +250,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_24 }}"
+          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Major Image Version: $MAJORVERSION"
@@ -301,7 +301,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_24 }}"
+          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Major Image Version: $MAJORVERSION"
@@ -312,7 +312,7 @@ jobs:
           sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
           # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION_24 }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
+          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
           mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
 
       - name: Set up QEMU
@@ -354,7 +354,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_24 }}"
+          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Major Image Version: $MAJORVERSION"
@@ -365,7 +365,7 @@ jobs:
           sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
           # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION_24 }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
+          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
           mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
 
       - name: Set up QEMU
@@ -407,7 +407,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_24 }}"
+          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Major Image Version: $MAJORVERSION"
@@ -418,7 +418,7 @@ jobs:
           sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
           # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION_24 }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
+          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
           mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
 
       - name: Set up Docker Buildx
@@ -456,7 +456,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_24 }}"
+          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Major Image Version: $MAJORVERSION"
