@@ -37,12 +37,15 @@ jobs:
         run: |
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          # Log output and export as Github environment variable
+          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Buildnumber: $BUILD"
           echo "build=$BUILD" >> $GITHUB_ENV
+          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
+          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
           # Set values in iobroker_startup.sh
           sed -e "s/\${VERSION}/$VERSION-dev/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
@@ -79,7 +82,7 @@ jobs:
           platforms: linux/arm/v7
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev,
-            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev,
+            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev,
 
   build-dev-arm64v8-recommended-node:
     name: Build dev armv64v8 image with recommended node version
@@ -95,12 +98,15 @@ jobs:
         run: |
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          # Log output and export as Github environment variable
+          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Buildnumber: $BUILD"
           echo "build=$BUILD" >> $GITHUB_ENV
+          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
+          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
           # Set values in iobroker_startup.sh
           sed -e "s/\${VERSION}/$VERSION-dev/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
@@ -137,7 +143,7 @@ jobs:
           platforms: linux/arm64/v8
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev,
-            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev,
+            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev,
 
   build-dev-amd64-recommended-node:
     name: Build dev amd64 image with recommended node version
@@ -153,12 +159,15 @@ jobs:
         run: |
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          # Log output and export as Github environment variable
+          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Buildnumber: $BUILD"
           echo "build=$BUILD" >> $GITHUB_ENV
+          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
+          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
           # Set values in iobroker_startup.sh
           sed -e "s/\${VERSION}/$VERSION-dev/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
@@ -192,7 +201,7 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev,
-            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev,
+            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev,
 
   create-multiarch-image-with-recommended-node:
     name: Create multiarch image with recommended node version
@@ -208,7 +217,8 @@ jobs:
         run: |
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          # Log output and export as Github environment variable
+          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -231,7 +241,7 @@ jobs:
       - name: Create and push multi-platform image
         run: |
           docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:dev ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev
-          docker buildx imagetools create -t ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:dev ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev
+          docker buildx imagetools create -t ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:dev ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev
 
 ### experimental node version
 
@@ -249,12 +259,15 @@ jobs:
         run: |
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          # Log output and export as Github environment variable
+          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Buildnumber: $BUILD"
           echo "build=$BUILD" >> $GITHUB_ENV
+          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
+          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
           # Set values in iobroker_startup.sh
           sed -e "s/\${VERSION}/$VERSION-dev/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
@@ -291,7 +304,7 @@ jobs:
           platforms: linux/arm/v7
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
 
   build-dev-arm64v8-experimental-node:
     name: Build dev armv64v8 image with experimental node version
@@ -307,12 +320,15 @@ jobs:
         run: |
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          # Log output and export as Github environment variable
+          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Buildnumber: $BUILD"
           echo "build=$BUILD" >> $GITHUB_ENV
+          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
+          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
           # Set values in iobroker_startup.sh
           sed -e "s/\${VERSION}/$VERSION-dev/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
@@ -349,7 +365,7 @@ jobs:
           platforms: linux/arm64/v8
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
 
   build-dev-amd64-experimental-node:
     name: Build dev amd64 image with experimental node version
@@ -365,12 +381,15 @@ jobs:
         run: |
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          # Log output and export as Github environment variable
+          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
           echo "[LOG] Buildnumber: $BUILD"
           echo "build=$BUILD" >> $GITHUB_ENV
+          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
+          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
           # Set values in iobroker_startup.sh
           sed -e "s/\${VERSION}/$VERSION-dev/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
           mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
@@ -404,7 +423,7 @@ jobs:
           platforms: linux/amd64
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-            ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
+            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
 
   create-multiarch-image-with-experimental-node:
     name: Create multiarch image with experimental node version
@@ -420,7 +439,8 @@ jobs:
         run: |
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          # Log output and export as Github environment variable
+          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -443,4 +463,4 @@ jobs:
       - name: Create and push multi-platform image
         run: |
           docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ vars.GHCR_ORG }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+          docker buildx imagetools create -t ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-armv7-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-dev-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
