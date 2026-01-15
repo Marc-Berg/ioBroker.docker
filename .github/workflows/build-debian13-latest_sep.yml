@@ -17,7 +17,7 @@ jobs:
       - name: Fetch latest release tag
         id: fetch-release-tag
         run: |
-          LATESTRELEASE="$(curl -sL https://api.github.com/repos/${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}/releases/latest | jq -r '.tag_name')"
+          LATESTRELEASE="$(curl -sL https://api.github.com/repos/${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}/releases/latest | jq -r '.tag_name')"
           if [ -z "$LATESTRELEASE" ]; then
             echo "[LOG] No prerelease found!" >&2
             exit 1
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           token: ${{ secrets.ACTIONS_PAT }}
           ref: main
           fetch-depth: 0
@@ -44,8 +44,8 @@ jobs:
 
       - name: Commit latest release version
         run: |
-          git config --global user.name '${{ vars.GIT_COMMIT_USER }}'
-          git config --global user.email '${{ vars.GIT_COMMIT_EMAIL }}'
+          git config --global user.name '${{ vars.COMMIT_USER }}'
+          git config --global user.email '${{ vars.COMMIT_EMAIL }}'
           git add .github/dependencies/.latest-build
           git commit -am "new build" || true
           git push
@@ -58,7 +58,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -120,7 +120,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -182,7 +182,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -241,7 +241,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -292,7 +292,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -345,7 +345,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -398,7 +398,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -447,7 +447,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
   
       - name: Set job variables

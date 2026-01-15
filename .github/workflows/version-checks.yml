@@ -12,7 +12,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           token: ${{ secrets.ACTIONS_PAT }}
 
       - name: Docker baseimage check (Debian 13)
@@ -47,8 +47,8 @@ jobs:
       - name: Commit latest release version
         if: steps.git-check.outputs.modified == 'true'
         run: |
-          git config --global user.name '${{ vars.GIT_COMMIT_USER }}'
-          git config --global user.email '${{ vars.GIT_COMMIT_EMAIL }}'
+          git config --global user.name '${{ vars.COMMIT_USER }}'
+          git config --global user.email '${{ vars.COMMIT_EMAIL }}'
           git commit -am "new ioBroker versions"
           git push
 
@@ -63,5 +63,5 @@ jobs:
         with:
           ref: 'main'
           workflow: 'Build Debian 13 Image (latest)'
-          repo: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repo: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           token: ${{ secrets.ACTIONS_PAT }}

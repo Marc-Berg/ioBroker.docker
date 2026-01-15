@@ -17,7 +17,7 @@ jobs:
       - name: Fetch prerelease tag
         id: fetch-prerelease-tag
         run: |
-          PRERELEASE_TAG=$(curl -sL "https://api.github.com/repos/${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}/releases" | jq -r '[.[] | select(.prerelease)][0].tag_name')
+          PRERELEASE_TAG=$(curl -sL "https://api.github.com/repos/${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}/releases" | jq -r '[.[] | select(.prerelease)][0].tag_name')
           if [ -z "$PRERELEASE_TAG" ]; then
             echo "[LOG] No prerelease found!" >&2
             exit 1
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ env.RELEASE_TAG }}
 
       - name: Generate build number
@@ -106,7 +106,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -165,7 +165,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -267,7 +267,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -326,7 +326,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -385,7 +385,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables
@@ -441,7 +441,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
 
       - name: Set job variables

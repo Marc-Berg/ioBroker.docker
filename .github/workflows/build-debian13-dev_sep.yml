@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Generate build number
         id: generate-build-number
@@ -31,7 +31,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Set job variables
         run: |
@@ -89,7 +89,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Set job variables
         run: |
@@ -147,7 +147,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Set job variables
         run: |
@@ -202,7 +202,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Set job variables
         run: |
@@ -243,7 +243,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Set job variables
         run: |
@@ -301,7 +301,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Set job variables
         run: |
@@ -359,7 +359,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Set job variables
         run: |
@@ -414,7 +414,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
-          repository: '${{ vars.GITHUB_REPO_OWNER }}/${{ vars.GITHUB_REPO_NAME }}'
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
 
       - name: Set job variables
         run: |
