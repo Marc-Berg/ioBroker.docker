@@ -67,7 +67,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-          # Log output and export as Github environment variable
+          # Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -132,7 +132,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
- and export as Github environment variable
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -197,7 +197,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
- and export as Github environment variable
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -259,7 +259,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
- and export as Github environment variable
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -312,7 +312,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
- and export as Github environment variable
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -369,7 +369,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
- and export as Github environment variable
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -426,7 +426,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
- and export as Github environment variable
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -480,7 +480,7 @@ jobs:
           MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
- and export as Github environment variable
+# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV

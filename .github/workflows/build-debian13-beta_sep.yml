@@ -55,7 +55,7 @@ jobs:
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-# Log output and export as Github environment variable
+# Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -117,7 +117,7 @@ jobs:
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-# Log output and export as Github environment variable
+# Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -179,7 +179,7 @@ jobs:
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-# Log output and export as Github environment variable
+# Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -238,7 +238,7 @@ jobs:
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-# Log output and export as Github environment variable
+# Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -285,7 +285,7 @@ jobs:
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-# Log output and export as Github environment variable
+# Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -347,7 +347,7 @@ jobs:
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-# Log output and export as Github environment variable
+# Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -409,7 +409,7 @@ jobs:
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-# Log output and export as Github environment variable
+# Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
@@ -468,7 +468,7 @@ jobs:
           VERSION="$(cat .VERSION)"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
           GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-# Log output and export as Github environment variable
+# Log output# Log output and export as Github environment variable
           echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
           echo "[LOG] Image Version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
