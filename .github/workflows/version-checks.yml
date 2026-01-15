@@ -15,12 +15,12 @@ jobs:
           repository: 'buanet/ioBroker.docker'
           token: ${{ secrets.ACTIONS_PAT }}
 
-      - name: Docker baseimage check
-        id: baseimage-check
+      - name: Docker baseimage check (Debian 13)
+        id: baseimage-check-debian13
         uses: lucacome/docker-image-update-checker@v3.0.1
         with:
-          base-image: debian:bookworm-slim
-          image: buanet/iobroker:latest
+          base-image: debian:trixie-slim
+          image: buanet/iobroker:debian13-latest
 
       - name: Fetch ioBroker and nodejs versions
         run: |
@@ -37,8 +37,8 @@ jobs:
           jq -r '."discovery".version' > .github/dependencies/.discovery-version
           echo "[LOG] Fetched discovery version is $(cat .github/dependencies/.discovery-version)"
           curl -sL https://nodejs.org/dist/index.json | \
-          jq -r 'map(select(.version | startswith("v22."))) | .[0].version' > .github/dependencies/.nodejs-version
-          echo "[LOG] Fetched nodejs version is $(cat .github/dependencies/.nodejs-version)"
+          jq -r 'map(select(.version | startswith("v24."))) | .[0].version' > .github/dependencies/.nodejs24-version
+          echo "[LOG] Fetched nodejs v24 version is $(cat .github/dependencies/.nodejs24-version)"
 
       - name: Check for modified files
         id: git-check
@@ -54,14 +54,14 @@ jobs:
 
       - name: Logging result
         run: |
-          echo "base image updated = ${{ steps.baseimage-check.outputs.needs-updating }}"
+          echo "Debian 13 base image updated = ${{ steps.baseimage-check-debian13.outputs.needs-updating }}"
           echo "ioBroker version updated = ${{ steps.git-check.outputs.modified }}"
 
-      - name: Trigger Build Debian 12 Image (latest)
-        if: steps.baseimage-check.outputs.needs-updating == 'true' || steps.git-check.outputs.modified == 'true'
+      - name: Trigger Build Debian 13 Image (latest)
+        if: steps.baseimage-check-debian13.outputs.needs-updating == 'true' || steps.git-check.outputs.modified == 'true'
         uses: benc-uk/workflow-dispatch@v1.2
         with:
           ref: 'main'
-          workflow: 'Build Debian 12 Image (latest)'
+          workflow: 'Build Debian 13 Image (latest)'
           repo: 'buanet/iobroker.docker'
           token: ${{ secrets.ACTIONS_PAT }}

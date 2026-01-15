@@ -1,5 +1,4 @@
-FROM debian:bookworm-slim
-# FROM node:20.12-bookworm-slim
+FROM node:24-trixie-slim
 
 
 LABEL org.opencontainers.image.title="Official ioBroker Docker Image" \
@@ -8,9 +7,9 @@ LABEL org.opencontainers.image.title="Official ioBroker Docker Image" \
       org.opencontainers.image.authors="André Germann <info@buanet.de>" \
       org.opencontainers.image.url="https://github.com/buanet/ioBroker.docker" \
       org.opencontainers.image.source="https://github.com/buanet/ioBroker.docker" \
-      org.opencontainers.image.base.name="debian:bookworm-slim" \
-      org.opencontainers.image.version="${VERSION}" \
-      org.opencontainers.image.created="${DATI}"
+      org.opencontainers.image.base.name="node:24-trixie-slim" \
+      org.opencontainers.image.version="v11.0.1" \
+      org.opencontainers.image.created="20260115-074541"
 
 ENV DEBIAN_FRONTEND="noninteractive"
 
@@ -47,16 +46,14 @@ RUN apt-get update && apt-get upgrade -y \
     # Prepare .docker_config
     && mkdir /opt/.docker_config \
     && echo "starting" > /opt/.docker_config/.healthcheck \
-    && echo "${VERSION}" > /opt/.docker_config/.thisisdocker \
-    && echo "${DATI}" > /opt/.docker_config/.build \
+    && echo "v11.0.1" > /opt/.docker_config/.thisisdocker \
+    && echo "20260115-074541" > /opt/.docker_config/.build \
     && echo "true" > /opt/.docker_config/.first_run \
     # Prepare old .docker_config (needed until changed in iobroker)
     && mkdir /opt/scripts/.docker_config \
-    && echo "${VERSION}" > /opt/scripts/.docker_config/.thisisdocker \
+    && echo "v11.0.1" > /opt/scripts/.docker_config/.thisisdocker \
     # Run iobroker installer
     && curl -sL https://iobroker.net/install.sh -o install.sh \
-    && sed -i 's/NODE_MAJOR=[0-9]\+/NODE_MAJOR=${NODE}/' install.sh \
-    && sed -i 's|NODE_JS_BREW_URL=.*|NODE_JS_BREW_URL="https://nodejs.org"|' install.sh \
     && bash install.sh \
     # Deleting UUID from build
     && iobroker unsetup -y \
@@ -64,7 +61,9 @@ RUN apt-get update && apt-get upgrade -y \
     # Backup initial ioBroker and userscript folder
     && tar -cf /opt/initial_iobroker.tar /opt/iobroker \
     && tar -cf /opt/initial_userscripts.tar /opt/userscripts \
-    # Setting up iobroker-user
+    # Setting up iobroker-user (node base image already has node user with UID 1000)
+    && if id -u 1000 >/dev/null 2>&1; then userdel -r $(id -un 1000); fi \
+    && if getent group 1000 >/dev/null 2>&1; then groupdel $(getent group 1000 | cut -d: -f1); fi \
     && chsh -s /bin/bash iobroker \
     && usermod --home /opt/iobroker iobroker \
     && usermod -u 1000 iobroker \
@@ -86,7 +85,7 @@ RUN apt-get update && apt-get upgrade -y \
     && rm -rf /tmp/* /var/tmp/* /root/.cache/* /root/.npm/* /var/lib/apt/lists/*
 
 # Default environment variables
-ENV BUILD="${BUILD}" \
+ENV BUILD="20260115-074541" \
     DEBIAN_FRONTEND="teletype" \
     LANG="de_DE.UTF-8" \
     LANGUAGE="de_DE:de" \
