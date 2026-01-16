@@ -38,7 +38,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Generate locales (cached layer)
+# Generate locales (combined with APT would be better, but keeping separate for now)
 RUN sed -i 's/^# *\(de_DE.UTF-8\)/\1/' /etc/locale.gen \
     && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
     && locale-gen
@@ -47,25 +47,20 @@ RUN sed -i 's/^# *\(de_DE.UTF-8\)/\1/' /etc/locale.gen \
 COPY scripts /opt/scripts
 COPY userscripts /opt/userscripts
 
-# Prepare docker config (cached layer)
+# Install and configure ioBroker (single layer to minimize image size)
 RUN mkdir /opt/.docker_config \
     && echo "starting" > /opt/.docker_config/.healthcheck \
     && echo "v11.0.1" > /opt/.docker_config/.thisisdocker \
     && echo "20260115-074541" > /opt/.docker_config/.build \
     && echo "true" > /opt/.docker_config/.first_run \
     && mkdir /opt/scripts/.docker_config \
-    && echo "v11.0.1" > /opt/scripts/.docker_config/.thisisdocker
-
-# Install ioBroker (this is the heavy layer - separate for better caching)
-RUN curl -sL https://iobroker.net/install.sh -o install.sh \
+    && echo "v11.0.1" > /opt/scripts/.docker_config/.thisisdocker \
+    && curl -sL https://iobroker.net/install.sh -o install.sh \
     && bash install.sh \
     && rm install.sh \
     && iobroker unsetup -y \
     && echo "true" > /opt/iobroker/.fresh_install \
-    && rm -rf /tmp/* /var/tmp/* /root/.cache/* /root/.npm/*
-
-# Backup initial state and setup user (combined to avoid layer bloat)
-RUN tar -cf /opt/initial_iobroker.tar /opt/iobroker \
+    && tar -cf /opt/initial_iobroker.tar /opt/iobroker \
     && tar -cf /opt/initial_userscripts.tar /opt/userscripts \
     && if id -u 1000 >/dev/null 2>&1 && [ "$(id -un 1000)" != "iobroker" ]; then userdel -r $(id -un 1000) 2>/dev/null || true; fi \
     && if getent group 1000 >/dev/null 2>&1 && [ "$(getent group 1000 | cut -d: -f1)" != "iobroker" ]; then groupdel $(getent group 1000 | cut -d: -f1) 2>/dev/null || true; fi \
@@ -79,7 +74,8 @@ RUN tar -cf /opt/initial_iobroker.tar /opt/iobroker \
     && chmod 755 /opt/userscripts/*.sh \
     && ln -s /opt/scripts/maintenance.sh /bin/maintenance \
     && ln -s /opt/scripts/maintenance.sh /bin/maint \
-    && ln -s /opt/scripts/maintenance.sh /bin/m
+    && ln -s /opt/scripts/maintenance.sh /bin/m \
+    && rm -rf /tmp/* /var/tmp/* /root/.cache/* /root/.npm/*
 
 # Default environment variables
 ENV BUILD="20260115-074541" \
