@@ -133,17 +133,20 @@ jobs:
           password: ${{ secrets.PACKAGES_PASS }}
 
       - name: Build and push Docker image
-        run: |
-          START_TIME=$(date +%s)
-          NODE_VERSION="${{ steps.set-node.outputs.node_version }}"
-          docker buildx build \
-            --platform ${{ matrix.platform }} \
-            --push \
-            --tag ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${NODE_VERSION} \
-            --tag ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${NODE_VERSION} \
-            --file ./debian13/Dockerfile \
-            ./debian13
-          echo "[TIMING] Build ${{ matrix.node_label }} Node${NODE_VERSION} ${{ matrix.arch }}: $(($(date +%s) - START_TIME))s"
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: ./debian13
+          file: ./debian13/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
+            ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
+
+      - name: Build timing
+        run: echo "[TIMING] Build ${{ matrix.node_label }} Node${{ steps.set-node.outputs.node_version }} ${{ matrix.arch }} completed"
 
   create-multiarch-images:
     name: Create multiarch manifests for Node${{ matrix.node_version }}

@@ -125,16 +125,20 @@ jobs:
           password: ${{ secrets.PACKAGES_PASS }}
 
       - name: Build and push Docker image
-        run: |
-          START_TIME=$(date +%s)
-          docker buildx build \
-            --platform ${{ matrix.platform }} \
-            --push \
-            --tag ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }} \
-            --tag ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }} \
-            --file ./debian13/Dockerfile \
-            ./debian13
-          echo "[TIMING] Build ${{ matrix.arch }}: $(($(date +%s) - START_TIME))s"
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: ./debian13
+          file: ./debian13/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
+            ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+
+      - name: Build timing
+        run: echo "[TIMING] Build ${{ matrix.arch }} completed"
 
   create-multiarch-image-for-buanet:
     name: Create multiarch manifests for buanet
@@ -231,15 +235,18 @@ jobs:
           password: ${{ secrets.DOCKER_PASS_IOB }}
 
       - name: Build and push Docker image
-        run: |
-          START_TIME=$(date +%s)
-          docker buildx build \
-            --platform ${{ matrix.platform }} \
-            --push \
-            --tag ${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }} \
-            --file ./debian13/Dockerfile \
-            ./debian13
-          echo "[TIMING] Build ${{ matrix.arch }} (iobroker): $(($(date +%s) - START_TIME))s"
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: ./debian13
+          file: ./debian13/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: ${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+
+      - name: Build timing
+        run: echo "[TIMING] Build ${{ matrix.arch }} (iobroker) completed"
 
   create-multiarch-image-for-iobroker:
     name: Create multiarch manifests for iobroker
