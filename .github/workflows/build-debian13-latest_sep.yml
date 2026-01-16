@@ -170,24 +170,27 @@ jobs:
             "${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}"
           )
           
-          # Define registries
-          REGISTRIES=(
-            "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}"
-            "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}"
-          )
-          
-          # Source images
           BUILD_TAG="${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}"
           
-          # Create manifests for each tag and registry
+          # Create GHCR manifests first (no rate limits)
+          echo "[LOG] Creating GHCR manifests..."
           for TAG in "${TAGS[@]}"; do
-            for REGISTRY in "${REGISTRIES[@]}"; do
-              echo "[LOG] Creating manifest: ${REGISTRY}:${TAG}"
-              docker buildx imagetools create \
-                -t "${REGISTRY}:${TAG}" \
-                "${REGISTRY}:${BUILD_TAG}-arm64v8" \
-                "${REGISTRY}:${BUILD_TAG}-amd64"
-            done
+            echo "[LOG] Creating manifest: ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${TAG}"
+            docker buildx imagetools create \
+              -t "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${TAG}" \
+              "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-arm64v8" \
+              "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-amd64"
+          done
+          
+          # Create DockerHub manifests with delays to avoid rate limiting
+          echo "[LOG] Creating DockerHub manifests..."
+          for TAG in "${TAGS[@]}"; do
+            echo "[LOG] Creating manifest: ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${TAG}"
+            docker buildx imagetools create \
+              -t "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${TAG}" \
+              "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-arm64v8" \
+              "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-amd64"
+            sleep 2  # Brief delay to avoid rate limit triggers
           done
           
           echo "[TIMING] Manifest creation: $(($(date +%s) - START_TIME))s"
