@@ -46,16 +46,6 @@ jobs:
           echo "build_number=$BUILD" >> $GITHUB_OUTPUT
           echo "[LOG] Buildnumber: $BUILD"
 
-      - name: Upload repo for reuse
-        uses: actions/upload-artifact@v4
-        with:
-          name: repo-checkout
-          path: |
-            debian13/
-            .VERSION
-            .github/actions/
-          retention-days: 1
-
   build-dev-images:
     name: Build ${{ matrix.node_label }} Node${{ matrix.node_version }} ${{ matrix.arch }} image
     needs: [create-build-number]
@@ -82,10 +72,11 @@ jobs:
             platform: linux/arm64/v8
             arch: arm64v8
     steps:
-      - name: Download repo
-        uses: actions/download-artifact@v4
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.1
         with:
-          name: repo-checkout
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          ref: main
 
       - name: Set Node version
         id: set-node
