@@ -13,10 +13,14 @@ jobs:
     outputs:
       build_number: ${{ steps.generate-build-number.outputs.build_number }}
       release_tag: ${{ steps.fetch-prerelease-tag.outputs.release_tag }}
+      version: ${{ steps.read-version.outputs.version }}
+      majorversion: ${{ steps.read-version.outputs.majorversion }}
+      ghcr_org: ${{ steps.lowercase-ghcr.outputs.org }}
     steps:
       - name: Fetch prerelease tag
         id: fetch-prerelease-tag
         run: |
+          START_TIME=$(date +%s)
           PRERELEASE_TAG=$(curl -sL "https://api.github.com/repos/${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}/releases" | jq -r '[.[] | select(.prerelease)][0].tag_name')
           if [ -z "$PRERELEASE_TAG" ]; then
             echo "[LOG] No prerelease found!" >&2
@@ -24,13 +28,31 @@ jobs:
           fi
           echo "RELEASE_TAG=$PRERELEASE_TAG" >> $GITHUB_ENV
           echo "release_tag=$PRERELEASE_TAG" >> $GITHUB_OUTPUT
-          echo "[LOG] Release tag: $PRERELEASE_TAG"
+          echo "[LOG] Prerelease tag: $PRERELEASE_TAG"
+          echo "[TIMING] Fetch prerelease: $(($(date +%s) - START_TIME))s"
 
       - name: Checkout repo
         uses: actions/checkout@v6.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ env.RELEASE_TAG }}
+
+      - name: Read version and prepare outputs
+        id: read-version
+        run: |
+          VERSION="$(cat .VERSION)"
+          MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "majorversion=$MAJORVERSION" >> $GITHUB_OUTPUT
+          echo "[LOG] Version: $VERSION-beta"
+          echo "[LOG] Major Version: $MAJORVERSION"
+
+      - name: Convert GHCR_ORG to lowercase
+        id: lowercase-ghcr
+        run: |
+          GHCR_ORG_LOWER="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+          echo "org=$GHCR_ORG_LOWER" >> $GITHUB_OUTPUT
+          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG_LOWER"
 
       - name: Generate build number
         id: generate-build-number
@@ -39,45 +61,73 @@ jobs:
           echo "build_number=$BUILD" >> $GITHUB_OUTPUT
           echo "[LOG] Buildnumber: $BUILD"
 
-  build-beta-arm64v8-recommended-node:
-    name: Build beta armv64v8 image with recommended node version
+      - name: Upload repo for reuse
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-checkout
+          path: |
+            .
+            !.git
+          retention-days: 1
+
+  build-beta-images:
+    name: Build ${{ matrix.node_label }} Node${{ matrix.node_version }} ${{ matrix.arch }} image
     needs: [create-build-number]
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Recommended Node Version
+          - node_version_var: RECOMMENDED_NODE_VERSION_BETA
+            node_label: recommended
+            platform: linux/amd64
+            arch: amd64
+          - node_version_var: RECOMMENDED_NODE_VERSION_BETA
+            node_label: recommended
+            platform: linux/arm64/v8
+            arch: arm64v8
+          # Experimental Node Version
+          - node_version_var: EXPERIMENTAL_NODE_VERSION_BETA
+            node_label: experimental
+            platform: linux/amd64
+            arch: amd64
+          - node_version_var: EXPERIMENTAL_NODE_VERSION_BETA
+            node_label: experimental
+            platform: linux/arm64/v8
+            arch: arm64v8
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6.0.1
+      - name: Download repo
+        uses: actions/download-artifact@v4
         with:
-          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
-          ref: ${{ needs.create-build-number.outputs.release_tag }}
+          name: repo-checkout
 
-      - name: Set job variables
+      - name: Set Node version
+        id: set-node
         run: |
-          VERSION="$(cat .VERSION)"
-          BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-          # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
-          echo "[LOG] Image Version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
-          echo "[LOG] Buildnumber: $BUILD"
-          echo "build=$BUILD" >> $GITHUB_ENV
-          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
-          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
-          # Set values in iobroker_startup.sh
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
-          mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
-          # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION_BETA }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
-          mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
+          if [ "${{ matrix.node_version_var }}" = "RECOMMENDED_NODE_VERSION_BETA" ]; then
+            NODE_VERSION="${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
+          else
+            NODE_VERSION="${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
+          fi
+          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "[LOG] Using Node.js version: $NODE_VERSION"
+
+      - name: Prepare build environment
+        uses: ./.github/actions/prepare-build
+        with:
+          version-suffix: '-beta'
+          node-version: ${{ steps.set-node.outputs.node_version }}
+          build-number: ${{ needs.create-build-number.outputs.build_number }}
+          ghcr-org: ${{ needs.create-build-number.outputs.ghcr_org }}
 
       - name: Set up QEMU
+        if: matrix.arch == 'arm64v8'
         uses: docker/setup-qemu-action@v3.7.0
 
       - name: Set up Docker Buildx
-        id: buildx
         uses: docker/setup-buildx-action@v3.12.0
 
-      - name: Login to DockerHub (buanet)
+      - name: Login to DockerHub
         uses: docker/login-action@v3.6.0
         with:
           username: ${{ secrets.DOCKER_USER }}
@@ -91,52 +141,42 @@ jobs:
           password: ${{ secrets.PACKAGES_PASS }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6.18.0
-        with:
-          context: ./debian13
-          file: ./debian13/Dockerfile
-          push: true
-          platforms: linux/arm64/v8
-          tags: |
-            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8,
-            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8,
-
-  build-beta-amd64-recommended-node:
-    name: Build beta amd64 image with recommended node version
-    needs: [create-build-number]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6.0.1
-        with:
-          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
-          ref: ${{ needs.create-build-number.outputs.release_tag }}
-
-      - name: Set job variables
         run: |
-          VERSION="$(cat .VERSION)"
-          BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-          # Log output and export as Github environment variable
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
-          echo "[LOG] Image Version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
-          echo "[LOG] Buildnumber: $BUILD"
-          echo "build=$BUILD" >> $GITHUB_ENV
-          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
-          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
-          # Set values in iobroker_startup.sh
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
-          mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
-          # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.RECOMMENDED_NODE_VERSION_BETA }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
-          mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
+          START_TIME=$(date +%s)
+          NODE_VERSION="${{ steps.set-node.outputs.node_version }}"
+          docker buildx build \
+            --platform ${{ matrix.platform }} \
+            --push \
+            --tag ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${NODE_VERSION} \
+            --tag ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${NODE_VERSION} \
+            --file ./debian13/Dockerfile \
+            ./debian13
+          echo "[TIMING] Build ${{ matrix.node_label }} Node${NODE_VERSION} ${{ matrix.arch }}: $(($(date +%s) - START_TIME))s"
 
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3.12.0
+  create-multiarch-images:
+    name: Create multiarch manifests for Node${{ matrix.node_version }}
+    runs-on: ubuntu-latest
+    needs: [build-beta-images, create-build-number]
+    strategy:
+      matrix:
+        include:
+          - node_version_var: RECOMMENDED_NODE_VERSION_BETA
+            node_label: recommended
+          - node_version_var: EXPERIMENTAL_NODE_VERSION_BETA
+            node_label: experimental
+    steps:
+      - name: Set Node version
+        id: set-node
+        run: |
+          if [ "${{ matrix.node_version_var }}" = "RECOMMENDED_NODE_VERSION_BETA" ]; then
+            NODE_VERSION="${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
+          else
+            NODE_VERSION="${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
+          fi
+          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
+          echo "[LOG] Creating manifests for Node.js version: $NODE_VERSION"
 
-      - name: Login to DockerHub (buanet)
+      - name: Login to DockerHub
         uses: docker/login-action@v3.6.0
         with:
           username: ${{ secrets.DOCKER_USER }}
@@ -149,222 +189,39 @@ jobs:
           username: ${{ secrets.PACKAGES_USER }}
           password: ${{ secrets.PACKAGES_PASS }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6.18.0
-        with:
-          context: ./debian13
-          file: ./debian13/Dockerfile
-          push: true
-          platforms: linux/amd64
-          tags: |
-            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64,
-            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64,
-
-  create-multiarch-image-with-recommended-node:
-    name: Create multiarch image with recommended node version
-    runs-on: ubuntu-latest
-    needs: [build-beta-arm64v8-recommended-node, build-beta-amd64-recommended-node, create-build-number]
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6.0.1
-        with:
-          repository: 'buanet/ioBroker.docker'
-          ref: ${{ needs.create-build-number.outputs.release_tag }}
-
-      - name: Set job variables
+      - name: Create and push multi-platform manifests
         run: |
-          VERSION="$(cat .VERSION)"
+          START_TIME=$(date +%s)
+          
+          NODE_VERSION="${{ steps.set-node.outputs.node_version }}"
+          VERSION="${{ needs.create-build-number.outputs.version }}"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-          echo "[LOG] Nodejs Version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}"
-          echo "[LOG] Image Version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
-          echo "[LOG] Buildnumber: $BUILD"
-          echo "build=$BUILD" >> $GITHUB_ENV
-
-      - name: Login to DockerHub (buanet)
-        uses: docker/login-action@v3.6.0
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.PACKAGES_USER }}
-          password: ${{ secrets.PACKAGES_PASS }}
-
-      - name: Create and push multi-platform image
-        run: |
-          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:beta ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:beta ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
-          docker buildx imagetools create -t ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8 ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64
-
-### experimental node version
-
-  build-beta-arm64v8-experimental-node:
-    name: Build beta armv64v8 image with experimental node version
-    needs: [create-build-number]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6.0.1
-        with:
-          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
-          ref: ${{ needs.create-build-number.outputs.release_tag }}
-
-      - name: Set job variables
-        run: |
-          VERSION="$(cat .VERSION)"
-          BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-          echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
-          echo "[LOG] Image Version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
-          echo "[LOG] Buildnumber: $BUILD"
-          echo "build=$BUILD" >> $GITHUB_ENV
-          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
-          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
-          # Set values in iobroker_startup.sh
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
-          mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
-          # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
-          mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.7.0
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3.12.0
-
-      - name: Login to DockerHub (buanet)
-        uses: docker/login-action@v3.6.0
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.PACKAGES_USER }}
-          password: ${{ secrets.PACKAGES_PASS }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6.18.0
-        with:
-          context: ./debian13
-          file: ./debian13/Dockerfile
-          push: true
-          platforms: linux/arm64/v8
-          tags: |
-            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-
-  build-beta-amd64-experimental-node:
-    name: Build beta amd64 image with experimental node version
-    needs: [create-build-number]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6.0.1
-        with:
-          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
-          ref: ${{ needs.create-build-number.outputs.release_tag }}
-
-      - name: Set job variables
-        run: |
-          VERSION="$(cat .VERSION)"
-          BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-          echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
-          echo "[LOG] Image Version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
-          echo "[LOG] Buildnumber: $BUILD"
-          echo "build=$BUILD" >> $GITHUB_ENV
-          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG"
-          echo "ghcr_org=$GHCR_ORG" >> $GITHUB_ENV
-          # Set values in iobroker_startup.sh
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${BUILD}/$BUILD/" ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
-          mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
-          # Set values in Dockerfile
-          sed -e "s/\${VERSION}/$VERSION/" -e "s/\${DATI}/$BUILD/" -e "s/\${BUILD}/$BUILD/" -e "s/\${NODE}/${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}/" ./debian13/Dockerfile > ./debian13/Dockerfile.tmp 
-          mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
-
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v3.12.0
-
-      - name: Login to DockerHub (buanet)
-        uses: docker/login-action@v3.6.0
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.PACKAGES_USER }}
-          password: ${{ secrets.PACKAGES_PASS }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v6.18.0
-        with:
-          context: ./debian13
-          file: ./debian13/Dockerfile
-          push: true
-          platforms: linux/amd64
-          tags: |
-            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-            ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }},
-
-  create-multiarch-image-with-experimental-node:
-    name: Create multiarch image with experimental node version
-    runs-on: ubuntu-latest
-    needs: [build-beta-arm64v8-experimental-node, build-beta-amd64-experimental-node, create-build-number]
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6.0.1
-        with:
-          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
-          ref: ${{ needs.create-build-number.outputs.release_tag }}
-
-      - name: Set job variables
-        run: |
-          VERSION="$(cat .VERSION)"
-          BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          GHCR_ORG="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
-          echo "[LOG] Nodejs Version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}"
-          echo "[LOG] Image Version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
-          echo "[LOG] Buildnumber: $BUILD"
-          echo "build=$BUILD" >> $GITHUB_ENV
-
-      - name: Login to DockerHub (buanet)
-        uses: docker/login-action@v3.6.0
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASS }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.PACKAGES_USER }}
-          password: ${{ secrets.PACKAGES_PASS }}
-
-      - name: Create and push multi-platform image
-        run: |
-          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:beta-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:beta-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
-          docker buildx imagetools create -t ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-arm64v8-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }} ghcr.io/${{ env.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ env.version }}-build.${{ env.build }}-amd64-node${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+          
+          # Define tags to create
+          TAGS=(
+            "beta-node${NODE_VERSION}"
+            "${VERSION}-beta-node${NODE_VERSION}"
+            "${VERSION}-beta-build.${BUILD}-node${NODE_VERSION}"
+          )
+          
+          # Define registries
+          REGISTRIES=(
+            "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}"
+            "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}"
+          )
+          
+          # Source image tag
+          BUILD_TAG="${VERSION}-beta-build.${BUILD}"
+          
+          # Create manifests for each tag and registry
+          for TAG in "${TAGS[@]}"; do
+            for REGISTRY in "${REGISTRIES[@]}"; do
+              echo "[LOG] Creating manifest: ${REGISTRY}:${TAG}"
+              docker buildx imagetools create \
+                -t "${REGISTRY}:${TAG}" \
+                "${REGISTRY}:${BUILD_TAG}-arm64v8-node${NODE_VERSION}" \
+                "${REGISTRY}:${BUILD_TAG}-amd64-node${NODE_VERSION}"
+            done
+          done
+          
+          echo "[TIMING] Manifest creation for Node${NODE_VERSION}: $(($(date +%s) - START_TIME))s"
