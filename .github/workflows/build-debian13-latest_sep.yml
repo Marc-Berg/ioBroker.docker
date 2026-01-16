@@ -77,8 +77,9 @@ jobs:
         with:
           name: repo-checkout
           path: |
-            .
-            !.git
+            debian13/
+            .VERSION
+            .github/actions/
           retention-days: 1
 
   build-images-for-buanet:
