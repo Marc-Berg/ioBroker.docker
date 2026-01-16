@@ -64,12 +64,10 @@ RUN curl -sL https://iobroker.net/install.sh -o install.sh \
     && echo "true" > /opt/iobroker/.fresh_install \
     && rm -rf /tmp/* /var/tmp/* /root/.cache/* /root/.npm/*
 
-# Backup initial state (separate layer)
+# Backup initial state and setup user (combined to avoid layer bloat)
 RUN tar -cf /opt/initial_iobroker.tar /opt/iobroker \
-    && tar -cf /opt/initial_userscripts.tar /opt/userscripts
-
-# Setup iobroker user and permissions (separate layer)
-RUN if id -u 1000 >/dev/null 2>&1 && [ "$(id -un 1000)" != "iobroker" ]; then userdel -r $(id -un 1000) 2>/dev/null || true; fi \
+    && tar -cf /opt/initial_userscripts.tar /opt/userscripts \
+    && if id -u 1000 >/dev/null 2>&1 && [ "$(id -un 1000)" != "iobroker" ]; then userdel -r $(id -un 1000) 2>/dev/null || true; fi \
     && if getent group 1000 >/dev/null 2>&1 && [ "$(getent group 1000 | cut -d: -f1)" != "iobroker" ]; then groupdel $(getent group 1000 | cut -d: -f1) 2>/dev/null || true; fi \
     && chsh -s /bin/bash iobroker \
     && usermod --home /opt/iobroker iobroker \
