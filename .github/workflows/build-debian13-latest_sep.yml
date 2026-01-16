@@ -31,13 +31,35 @@ jobs:
           echo "[LOG] Latest release tag: $LATESTRELEASE"
           echo "[TIMING] Fetch release: $(($(date +%s) - START_TIME))s"
 
-      - name: Checkout repo
+      - name: Checkout repo (main for build number commit)
         uses: actions/checkout@v6.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           token: ${{ secrets.ACTIONS_PAT }}
           ref: main
           fetch-depth: 0
+
+      - name: Generate build number
+        id: generate-build-number
+        run: |
+          BUILD="$(date +"%Y%m%d.%H%M%S")"
+          echo "$BUILD" > .github/dependencies/.latest-build
+          echo "build_number=$BUILD" >> $GITHUB_OUTPUT
+          echo "[LOG] Buildnumber: $BUILD"
+
+      - name: Commit latest release version
+        run: |
+          git config --global user.name '${{ vars.COMMIT_USER }}'
+          git config --global user.email '${{ vars.COMMIT_EMAIL }}'
+          git add .github/dependencies/.latest-build
+          git commit -am "chore: Update build number to ${{ steps.generate-build-number.outputs.build_number }}" || true
+          git push
+
+      - name: Checkout repo (release tag for builds)
+        uses: actions/checkout@v6.0.1
+        with:
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          ref: ${{ env.RELEASE_TAG }}
 
       - name: Read version and prepare outputs
         id: read-version
@@ -55,22 +77,6 @@ jobs:
           GHCR_ORG_LOWER="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
           echo "org=$GHCR_ORG_LOWER" >> $GITHUB_OUTPUT
           echo "[LOG] GHCR Org (lowercase): $GHCR_ORG_LOWER"
-
-      - name: Generate build number
-        id: generate-build-number
-        run: |
-          BUILD="$(date +"%Y%m%d.%H%M%S")"
-          echo "$BUILD" > .github/dependencies/.latest-build
-          echo "build_number=$BUILD" >> $GITHUB_OUTPUT
-          echo "[LOG] Buildnumber: $BUILD"
-
-      - name: Commit latest release version
-        run: |
-          git config --global user.name '${{ vars.COMMIT_USER }}'
-          git config --global user.email '${{ vars.COMMIT_EMAIL }}'
-          git add .github/dependencies/.latest-build
-          git commit -am "chore: Update build number to ${{ steps.generate-build-number.outputs.build_number }}" || true
-          git push
 
       - name: Upload repo for reuse
         uses: actions/upload-artifact@v4

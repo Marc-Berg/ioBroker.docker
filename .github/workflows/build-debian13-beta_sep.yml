@@ -31,7 +31,7 @@ jobs:
           echo "[LOG] Prerelease tag: $PRERELEASE_TAG"
           echo "[TIMING] Fetch prerelease: $(($(date +%s) - START_TIME))s"
 
-      - name: Checkout repo
+      - name: Checkout repo (release tag)
         uses: actions/checkout@v6.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
