@@ -1,0 +1,67 @@
+name: 'Prepare Build Environment'
+description: 'Prepares build environment with version variables and template substitution'
+inputs:
+  version-suffix:
+    description: 'Version suffix (empty, "-dev", or "-beta")'
+    required: false
+    default: ''
+  node-version:
+    description: 'Node.js version to use'
+    required: true
+  build-number:
+    description: 'Build number'
+    required: true
+  ghcr-org:
+    description: 'GHCR organization (lowercase)'
+    required: true
+
+outputs:
+  version:
+    description: 'Image version'
+    value: ${{ steps.set-vars.outputs.version }}
+  majorversion:
+    description: 'Major version with latest- prefix'
+    value: ${{ steps.set-vars.outputs.majorversion }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set job variables
+      id: set-vars
+      shell: bash
+      run: |
+        VERSION="$(cat .VERSION)"
+        MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
+        BUILD="${{ inputs.build-number }}"
+        
+        echo "[LOG] Node.js Version: ${{ inputs.node-version }}"
+        echo "[LOG] Image Version: ${VERSION}${{ inputs.version-suffix }}"
+        echo "version=${VERSION}" >> $GITHUB_ENV
+        echo "version=${VERSION}" >> $GITHUB_OUTPUT
+        echo "[LOG] Major Image Version: $MAJORVERSION"
+        echo "majorversion=$MAJORVERSION" >> $GITHUB_ENV
+        echo "majorversion=$MAJORVERSION" >> $GITHUB_OUTPUT
+        echo "[LOG] Buildnumber: $BUILD"
+        echo "build=$BUILD" >> $GITHUB_ENV
+        echo "[LOG] GHCR Org: ${{ inputs.ghcr-org }}"
+        echo "ghcr_org=${{ inputs.ghcr-org }}" >> $GITHUB_ENV
+
+    - name: Template Dockerfile and scripts
+      shell: bash
+      run: |
+        VERSION="$(cat .VERSION)"
+        BUILD="${{ inputs.build-number }}"
+        
+        # Set values in iobroker_startup.sh
+        sed -e "s/\${VERSION}/${VERSION}${{ inputs.version-suffix }}/" \
+            -e "s/\${BUILD}/$BUILD/" \
+            ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
+        mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
+        
+        # Set values in Dockerfile
+        sed -e "s/\${VERSION}/${VERSION}/" \
+            -e "s/\${DATI}/$BUILD/" \
+            -e "s/\${BUILD}/$BUILD/" \
+            -e "s/\${NODE}/${{ inputs.node-version }}/" \
+            ./debian13/Dockerfile > ./debian13/Dockerfile.tmp
+        mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile

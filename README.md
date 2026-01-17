@@ -101,3 +101,4 @@ SOFTWARE.
 ## :star: Credits
 
 Inspired by https://github.com/MehrCurry/docker-iobroker
+# Trigger workflow indexing

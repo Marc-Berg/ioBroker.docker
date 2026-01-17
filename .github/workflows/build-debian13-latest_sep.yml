@@ -1,0 +1,289 @@
+# Github action to build Debian13 image (Tag: latest)
+name: Build Debian 13 Image (latest)
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+
+jobs:
+  create-build-number:
+    name: Create build number
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.generate-build-number.outputs.build_number }}
+      release_tag: ${{ steps.fetch-release-tag.outputs.release_tag }}
+      version: ${{ steps.read-version.outputs.version }}
+      majorversion: ${{ steps.read-version.outputs.majorversion }}
+      ghcr_org: ${{ steps.lowercase-ghcr.outputs.org }}
+    steps:
+      - name: Fetch latest release tag
+        id: fetch-release-tag
+        run: |
+          START_TIME=$(date +%s)
+          LATESTRELEASE="$(curl -sL https://api.github.com/repos/${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}/releases/latest | jq -r '.tag_name')"
+          if [ -z "$LATESTRELEASE" ]; then
+            echo "[LOG] No release found!" >&2
+            exit 1
+          fi
+          echo "RELEASE_TAG=$LATESTRELEASE" >> $GITHUB_ENV
+          echo "release_tag=$LATESTRELEASE" >> $GITHUB_OUTPUT
+          echo "[LOG] Latest release tag: $LATESTRELEASE"
+          echo "[TIMING] Fetch release: $(($(date +%s) - START_TIME))s"
+
+      - name: Checkout repo (main for build number commit)
+        uses: actions/checkout@v6.0.1
+        with:
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          token: ${{ secrets.ACTIONS_PAT }}
+          ref: main
+          fetch-depth: 0
+
+      - name: Generate build number
+        id: generate-build-number
+        run: |
+          BUILD="$(date +"%Y%m%d.%H%M%S")"
+          echo "$BUILD" > .github/dependencies/.latest-build
+          echo "build_number=$BUILD" >> $GITHUB_OUTPUT
+          echo "[LOG] Buildnumber: $BUILD"
+
+      - name: Commit latest release version
+        run: |
+          git config --global user.name '${{ vars.COMMIT_USER }}'
+          git config --global user.email '${{ vars.COMMIT_EMAIL }}'
+          git add .github/dependencies/.latest-build
+          git commit -am "chore: Update build number to ${{ steps.generate-build-number.outputs.build_number }}" || true
+          git push
+
+      - name: Checkout repo (release tag for builds)
+        uses: actions/checkout@v6.0.1
+        with:
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          ref: ${{ env.RELEASE_TAG }}
+
+      - name: Read version and prepare outputs
+        id: read-version
+        run: |
+          VERSION="$(cat .VERSION)"
+          MAJORVERSION="$(cat .VERSION | cut -c 1-3 | sed -r 's#^(.{0})#\1latest-#')"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "majorversion=$MAJORVERSION" >> $GITHUB_OUTPUT
+          echo "[LOG] Version: $VERSION"
+          echo "[LOG] Major Version: $MAJORVERSION"
+
+      - name: Convert GHCR_ORG to lowercase
+        id: lowercase-ghcr
+        run: |
+          GHCR_ORG_LOWER="$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')"
+          echo "org=$GHCR_ORG_LOWER" >> $GITHUB_OUTPUT
+          echo "[LOG] GHCR Org (lowercase): $GHCR_ORG_LOWER"
+
+  build-images-for-buanet:
+    name: Build images for buanet
+    needs: [create-build-number]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+          - platform: linux/arm64/v8
+            arch: arm64v8
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.1
+        with:
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          ref: ${{ needs.create-build-number.outputs.release_tag }}
+
+      - name: Prepare build environment
+        uses: ./.github/actions/prepare-build
+        with:
+          version-suffix: ''
+          node-version: ${{ vars.RECOMMENDED_NODE_VERSION }}
+          build-number: ${{ needs.create-build-number.outputs.build_number }}
+          ghcr-org: ${{ needs.create-build-number.outputs.ghcr_org }}
+
+      - name: Set up QEMU
+        if: matrix.arch == 'arm64v8'
+        uses: docker/setup-qemu-action@v3.7.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.12.0
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3.6.0
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PACKAGES_USER }}
+          password: ${{ secrets.PACKAGES_PASS }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: ./debian13
+          file: ./debian13/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: |
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
+            ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+
+      - name: Build timing
+        run: echo "[TIMING] Build ${{ matrix.arch }} completed"
+
+  create-multiarch-image-for-buanet:
+    name: Create multiarch manifests for buanet
+    runs-on: ubuntu-latest
+    needs: [build-images-for-buanet, create-build-number]
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v3.6.0
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PACKAGES_USER }}
+          password: ${{ secrets.PACKAGES_PASS }}
+
+      - name: Create and push multi-platform manifests
+        run: |
+          START_TIME=$(date +%s)
+          
+          # Define tags to create
+          TAGS=(
+            "latest"
+            "${{ needs.create-build-number.outputs.majorversion }}"
+            "${{ needs.create-build-number.outputs.version }}"
+            "${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}"
+          )
+          
+          BUILD_TAG="${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}"
+          
+          # Create GHCR manifests first (no rate limits)
+          echo "[LOG] Creating GHCR manifests..."
+          for TAG in "${TAGS[@]}"; do
+            echo "[LOG] Creating manifest: ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${TAG}"
+            docker buildx imagetools create \
+              -t "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${TAG}" \
+              "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-arm64v8" \
+              "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-amd64"
+          done
+          
+          # Create DockerHub manifests with delays to avoid rate limiting
+          echo "[LOG] Creating DockerHub manifests..."
+          for TAG in "${TAGS[@]}"; do
+            echo "[LOG] Creating manifest: ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${TAG}"
+            docker buildx imagetools create \
+              -t "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${TAG}" \
+              "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-arm64v8" \
+              "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-amd64"
+            sleep 2  # Brief delay to avoid rate limit triggers
+          done
+          
+          echo "[TIMING] Manifest creation: $(($(date +%s) - START_TIME))s"
+
+### build for iobroker repo
+
+  build-images-for-iobroker:
+    name: Build images for iobroker
+    if: vars.ENABLE_SECONDARY_DEPLOYMENT == 'true'
+    needs: [create-build-number]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            arch: amd64
+          - platform: linux/arm64/v8
+            arch: arm64v8
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.1
+        with:
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          ref: ${{ needs.create-build-number.outputs.release_tag }}
+
+      - name: Prepare build environment
+        uses: ./.github/actions/prepare-build
+        with:
+          version-suffix: ''
+          node-version: ${{ vars.RECOMMENDED_NODE_VERSION }}
+          build-number: ${{ needs.create-build-number.outputs.build_number }}
+          ghcr-org: ${{ needs.create-build-number.outputs.ghcr_org }}
+
+      - name: Set up QEMU
+        if: matrix.arch == 'arm64v8'
+        uses: docker/setup-qemu-action@v3.7.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3.12.0
+
+      - name: Login to DockerHub (iobroker)
+        uses: docker/login-action@v3.6.0
+        with:
+          username: ${{ secrets.DOCKER_USER_IOB }}
+          password: ${{ secrets.DOCKER_PASS_IOB }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: ./debian13
+          file: ./debian13/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          tags: ${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+
+      - name: Build timing
+        run: echo "[TIMING] Build ${{ matrix.arch }} (iobroker) completed"
+
+  create-multiarch-image-for-iobroker:
+    name: Create multiarch manifests for iobroker
+    if: vars.ENABLE_SECONDARY_DEPLOYMENT == 'true'
+    runs-on: ubuntu-latest
+    needs: [build-images-for-iobroker, create-build-number]
+    steps:
+      - name: Login to DockerHub (iobroker)
+        uses: docker/login-action@v3.6.0
+        with:
+          username: ${{ secrets.DOCKER_USER_IOB }}
+          password: ${{ secrets.DOCKER_PASS_IOB }}
+
+      - name: Create and push multi-platform manifests
+        run: |
+          START_TIME=$(date +%s)
+          
+          # Define tags
+          TAGS=(
+            "latest"
+            "${{ needs.create-build-number.outputs.majorversion }}"
+            "${{ needs.create-build-number.outputs.version }}"
+            "${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}"
+          )
+          
+          REGISTRY="${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}"
+          BUILD_TAG="${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}"
+          
+          for TAG in "${TAGS[@]}"; do
+            echo "[LOG] Creating manifest: ${REGISTRY}:${TAG}"
+            docker buildx imagetools create \
+              -t "${REGISTRY}:${TAG}" \
+              "${REGISTRY}:${BUILD_TAG}-arm64v8" \
+              "${REGISTRY}:${BUILD_TAG}-amd64"
+          done
+          
+          echo "[TIMING] Manifest creation (iobroker): $(($(date +%s) - START_TIME))s"

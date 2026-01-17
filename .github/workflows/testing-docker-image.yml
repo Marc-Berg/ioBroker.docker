@@ -11,7 +11,7 @@ jobs:
       - name: Testing with docker run
         run: |
           echo "[LOG] Starting ioBroker Container..."
-          docker run -d --name iobroker buanet/iobroker:latest
+          docker run -d --name iobroker ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
           echo "[LOG] Done."
           echo ' '
           echo "[LOG] Waiting for Startup Script..."
