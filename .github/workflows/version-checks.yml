@@ -25,18 +25,21 @@ jobs:
 
       - name: Fetch ioBroker and nodejs versions
         run: |
-          curl -sL https://download.iobroker.net/sources-dist.json | \
-          jq -r '."js-controller".version' > .github/dependencies/.js-controller-version
+          # Fetch sources-dist.json once and cache it
+          SOURCES_JSON=$(curl -sL https://download.iobroker.net/sources-dist.json)
+          
+          echo "$SOURCES_JSON" | jq -r '."js-controller".version' > .github/dependencies/.js-controller-version
           echo "[LOG] Fetched js-controller version is $(cat .github/dependencies/.js-controller-version)"
-          curl -sL https://download.iobroker.net/sources-dist.json | \
-          jq -r '."admin".version' > .github/dependencies/.admin-version
+          
+          echo "$SOURCES_JSON" | jq -r '."admin".version' > .github/dependencies/.admin-version
           echo "[LOG] Fetched admin version is $(cat .github/dependencies/.admin-version)"
-          curl -sL https://download.iobroker.net/sources-dist.json | \
-          jq -r '."backitup".version' > .github/dependencies/.backitup-version
+          
+          echo "$SOURCES_JSON" | jq -r '."backitup".version' > .github/dependencies/.backitup-version
           echo "[LOG] Fetched backitup version is $(cat .github/dependencies/.backitup-version)"
-          curl -sL https://download.iobroker.net/sources-dist.json | \
-          jq -r '."discovery".version' > .github/dependencies/.discovery-version
+          
+          echo "$SOURCES_JSON" | jq -r '."discovery".version' > .github/dependencies/.discovery-version
           echo "[LOG] Fetched discovery version is $(cat .github/dependencies/.discovery-version)"
+          
           curl -sL https://nodejs.org/dist/index.json | \
           jq -r 'map(select(.version | startswith("v24."))) | .[0].version' > .github/dependencies/.nodejs24-version
           echo "[LOG] Fetched nodejs v24 version is $(cat .github/dependencies/.nodejs24-version)"
