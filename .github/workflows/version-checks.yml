@@ -62,7 +62,7 @@ jobs:
         if: steps.baseimage-check-debian13.outputs.needs-updating == 'true' || steps.git-check.outputs.modified == 'true'
         uses: benc-uk/workflow-dispatch@v1.2
         with:
-          ref: 'main'
+          ref: ${{ github.ref }}
           workflow: 'Build Debian 13 Image (latest)'
           repo: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           token: ${{ secrets.ACTIONS_PAT }}
