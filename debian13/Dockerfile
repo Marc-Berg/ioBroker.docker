@@ -1,15 +1,15 @@
-FROM node:24-trixie-slim
+FROM node:${NODE}-trixie-slim
 
 
 LABEL org.opencontainers.image.title="Official ioBroker Docker Image" \
-      org.opencontainers.image.description="Official Docker image for ioBroker smarthome software (https://www.iobroker.net)" \
-      org.opencontainers.image.documentation="https://github.com/buanet/ioBroker.docker#readme" \
-      org.opencontainers.image.authors="André Germann <info@buanet.de>" \
-      org.opencontainers.image.url="https://github.com/buanet/ioBroker.docker" \
-      org.opencontainers.image.source="https://github.com/buanet/ioBroker.docker" \
-      org.opencontainers.image.base.name="node:24-trixie-slim" \
-      org.opencontainers.image.version="v11.0.1" \
-      org.opencontainers.image.created="20260115-074541"
+    org.opencontainers.image.description="Official Docker image for ioBroker smarthome software (https://www.iobroker.net)" \
+    org.opencontainers.image.documentation="https://github.com/buanet/ioBroker.docker#readme" \
+    org.opencontainers.image.authors="André Germann <info@buanet.de>" \
+    org.opencontainers.image.url="https://github.com/buanet/ioBroker.docker" \
+    org.opencontainers.image.source="https://github.com/buanet/ioBroker.docker" \
+    org.opencontainers.image.base.name="node:${NODE}-trixie-slim" \
+    org.opencontainers.image.version="${VERSION}" \
+    org.opencontainers.image.created="${DATI}"
 
 ENV DEBIAN_FRONTEND="noninteractive"
 
@@ -50,11 +50,11 @@ COPY userscripts /opt/userscripts
 # Install and configure ioBroker (single layer to minimize image size)
 RUN mkdir /opt/.docker_config \
     && echo "starting" > /opt/.docker_config/.healthcheck \
-    && echo "v11.0.1" > /opt/.docker_config/.thisisdocker \
-    && echo "20260115-074541" > /opt/.docker_config/.build \
+    && echo "${VERSION}" > /opt/.docker_config/.thisisdocker \
+    && echo "${BUILD}" > /opt/.docker_config/.build \
     && echo "true" > /opt/.docker_config/.first_run \
     && mkdir /opt/scripts/.docker_config \
-    && echo "v11.0.1" > /opt/scripts/.docker_config/.thisisdocker \
+    && echo "${VERSION}" > /opt/scripts/.docker_config/.thisisdocker \
     && curl -sL https://iobroker.net/install.sh -o install.sh \
     && bash install.sh \
     && rm install.sh \
@@ -78,7 +78,7 @@ RUN mkdir /opt/.docker_config \
     && rm -rf /tmp/* /var/tmp/* /root/.cache/* /root/.npm/*
 
 # Default environment variables
-ENV BUILD="20260115-074541" \
+ENV BUILD="${BUILD}" \
     DEBIAN_FRONTEND="teletype" \
     LANG="de_DE.UTF-8" \
     LANGUAGE="de_DE:de" \
