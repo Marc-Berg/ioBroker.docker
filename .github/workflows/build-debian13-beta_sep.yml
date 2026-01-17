@@ -62,7 +62,7 @@ jobs:
           echo "[LOG] Buildnumber: $BUILD"
 
   build-beta-images:
-    name: Build ${{ matrix.node_label }} Node${{ matrix.node_version }} ${{ matrix.arch }} image
+    name: Build beta images
     needs: [create-build-number]
     runs-on: ubuntu-latest
     strategy:

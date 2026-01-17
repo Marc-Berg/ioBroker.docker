@@ -47,7 +47,7 @@ jobs:
           echo "[LOG] Buildnumber: $BUILD"
 
   build-dev-images:
-    name: Build ${{ matrix.node_label }} Node${{ matrix.node_version }} ${{ matrix.arch }} image
+    name: Build dev images
     needs: [create-build-number]
     runs-on: ubuntu-latest
     strategy:

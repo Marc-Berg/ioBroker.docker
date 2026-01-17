@@ -79,7 +79,7 @@ jobs:
           echo "[LOG] GHCR Org (lowercase): $GHCR_ORG_LOWER"
 
   build-images-for-buanet:
-    name: Build ${{ matrix.arch }} image for buanet
+    name: Build images for buanet
     needs: [create-build-number]
     runs-on: ubuntu-latest
     strategy:
@@ -198,7 +198,7 @@ jobs:
 ### build for iobroker repo
 
   build-images-for-iobroker:
-    name: Build ${{ matrix.arch }} image for iobroker
+    name: Build images for iobroker
     if: vars.ENABLE_SECONDARY_DEPLOYMENT == 'true'
     needs: [create-build-number]
     runs-on: ubuntu-latest
