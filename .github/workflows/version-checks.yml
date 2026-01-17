@@ -19,8 +19,8 @@ jobs:
         id: baseimage-check-debian13
         uses: lucacome/docker-image-update-checker@v3.0.1
         with:
-          base-image: debian:trixie-slim
-          image: ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:debian13-latest
+          base-image: node:24-trixie-slim
+          image: ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
 
       - name: Fetch ioBroker and nodejs versions
         run: |
