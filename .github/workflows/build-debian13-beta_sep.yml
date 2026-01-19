@@ -22,7 +22,7 @@ jobs:
         run: |
           START_TIME=$(date +%s)
           PRERELEASE_TAG=$(curl -sL "https://api.github.com/repos/${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}/releases" | jq -r '[.[] | select(.prerelease)][0].tag_name')
-          if [ -z "$PRERELEASE_TAG" ]; then
+          if [ -z "$PRERELEASE_TAG" ] || [ "$PRERELEASE_TAG" = "null" ]; then
             echo "[LOG] No prerelease found!" >&2
             exit 1
           fi
