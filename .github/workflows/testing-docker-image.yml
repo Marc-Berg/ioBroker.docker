@@ -7,6 +7,7 @@ on:
 jobs:
   test-docker-image:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Testing with docker run
         run: |
@@ -31,3 +32,7 @@ jobs:
           echo ' '
           echo "[LOG] Test successful."
           echo ' '
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f iobroker || true

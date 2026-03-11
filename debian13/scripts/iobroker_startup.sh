@@ -171,7 +171,7 @@ fi
 echo " "
 
 # Setting UID and/ or GID
-if [[ "$setgid" != "$(id -u iobroker)" || "$setuid" != "$(id -g iobroker)" ]]; then
+if [[ "$setuid" != "$(id -u iobroker)" || "$setgid" != "$(id -g iobroker)" ]]; then
   echo "SETUID and/ or SETGID are set to custom values."
   echo -n "Changing UID to \"""$setuid""\" and GID to \"""$setgid""\"... "
     usermod -u "$setuid" iobroker
@@ -191,7 +191,7 @@ echo "-----             Step 2 of 5: Detecting ioBroker Installation            
 echo "$(printf -- '-%.0s' {1..80})"
 echo " "
 
-if [[ `find /opt/iobroker -type f | wc -l` -lt 1 ]]; then
+if [[ $(find /opt/iobroker -type f | wc -l) -lt 1 ]]; then
   echo "There is no data detected in /opt/iobroker."
   echo -n "Restoring initial ioBroker installation... "
     tar -xf /opt/initial_iobroker.tar -C /
@@ -501,7 +501,7 @@ fi
 
 # Checking for Userscripts in /opt/userscripts
 if [[ $(find /opt/userscripts -type f | wc -l) -lt 1 ]]; then
-  echo -n "There is no data detected in /opt/userscripts. Restoring exapmple userscripts... "
+  echo -n "There is no data detected in /opt/userscripts. Restoring example userscripts... "
     tar -xf /opt/initial_userscripts.tar -C /
     chmod 755 /opt/userscripts/userscript_firststart_example.sh
     chmod 755 /opt/userscripts/userscript_everystart_example.sh

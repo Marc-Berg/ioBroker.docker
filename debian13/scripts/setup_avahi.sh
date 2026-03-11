@@ -24,7 +24,7 @@ then
   rm -f /var/run/dbus/pid
 fi
 
-if [ -f /var/run/avahi-daemon//pid ];
+if [ -f /var/run/avahi-daemon/pid ];
 then
   rm -f /var/run/avahi-daemon//pid
 fi
