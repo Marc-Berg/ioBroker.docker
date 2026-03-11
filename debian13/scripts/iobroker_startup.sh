@@ -58,6 +58,8 @@ stop_on_error() {
 
 # Getting date and time for logging
 dati=$(date '+%Y-%m-%d %H:%M:%S')
+image_version=$(cat /opt/.docker_config/.thisisdocker 2>/dev/null || echo "unknown")
+build_version=$(cat /opt/.docker_config/.build 2>/dev/null || echo "unknown")
 
 # Logging header
 echo " "
@@ -83,8 +85,8 @@ echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" arch: "$(
 echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" hostname: "$(hostname)")" && echo " -----"
 echo "-----                                                                      -----"
 echo "-----                          Version Information                         -----"
-echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" image: "v11.0.1")" && echo " -----"
-echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" build: "20260115-074541")" && echo " -----"
+echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" image: "$image_version")" && echo " -----"
+echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" build: "$build_version")" && echo " -----"
 echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" node: "$(node -v)")" && echo " -----"
 echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" npm: "$(npm -v)")" && echo " -----"
 echo "-----                                                                      -----"

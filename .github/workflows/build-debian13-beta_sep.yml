@@ -139,11 +139,16 @@ jobs:
           file: ./debian13/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
+          build-args: |
+            NODE=${{ steps.set-node.outputs.node_version }}
+            VERSION=${{ needs.create-build-number.outputs.version }}
+            DATI=${{ needs.create-build-number.outputs.build_number }}
+            BUILD=${{ needs.create-build-number.outputs.build_number }}
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
             ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
-          cache-from: type=gha,scope=build-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
-          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
+          cache-from: type=gha,scope=build-beta-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
+          cache-to: type=gha,mode=max,scope=build-beta-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
 
       - name: Build timing
         run: echo "[TIMING] Build ${{ matrix.node_label }} Node${{ steps.set-node.outputs.node_version }} ${{ matrix.arch }} completed"

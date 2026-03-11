@@ -131,11 +131,16 @@ jobs:
           file: ./debian13/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
+          build-args: |
+            NODE=${{ vars.RECOMMENDED_NODE_VERSION }}
+            VERSION=${{ needs.create-build-number.outputs.version }}
+            DATI=${{ needs.create-build-number.outputs.build_number }}
+            BUILD=${{ needs.create-build-number.outputs.build_number }}
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
             ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
-          cache-from: type=gha,scope=build-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-latest-${{ matrix.arch }}-buanet
+          cache-to: type=gha,mode=max,scope=build-latest-${{ matrix.arch }}-buanet
 
       - name: Build timing
         run: echo "[TIMING] Build ${{ matrix.arch }} completed"
@@ -244,9 +249,14 @@ jobs:
           file: ./debian13/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
+          build-args: |
+            NODE=${{ vars.RECOMMENDED_NODE_VERSION }}
+            VERSION=${{ needs.create-build-number.outputs.version }}
+            DATI=${{ needs.create-build-number.outputs.build_number }}
+            BUILD=${{ needs.create-build-number.outputs.build_number }}
           tags: ${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
-          cache-from: type=gha,scope=build-${{ matrix.arch }}
-          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+          cache-from: type=gha,scope=build-latest-${{ matrix.arch }}-iobroker
+          cache-to: type=gha,mode=max,scope=build-latest-${{ matrix.arch }}-iobroker
 
       - name: Build timing
         run: echo "[TIMING] Build ${{ matrix.arch }} (iobroker) completed"
