@@ -255,8 +255,7 @@ jobs:
             DATI=${{ needs.create-build-number.outputs.build_number }}
             BUILD=${{ needs.create-build-number.outputs.build_number }}
           tags: ${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}
-          cache-from: type=gha,scope=build-latest-${{ matrix.arch }}-iobroker
-          cache-to: type=gha,mode=max,scope=build-latest-${{ matrix.arch }}-iobroker
+          cache-from: type=gha,scope=build-latest-${{ matrix.arch }}-buanet
 
       - name: Build timing
         run: echo "[TIMING] Build ${{ matrix.arch }} (iobroker) completed"

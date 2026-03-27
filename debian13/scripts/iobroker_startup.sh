@@ -508,7 +508,7 @@ if [[ "$usbdevices" != "" && "$usbdevices" != "none" ]]; then
 fi
 
 # Checking for Userscripts in /opt/userscripts
-if [[ $(find /opt/userscripts -type f | wc -l) -lt 1 ]]; then
+if [[ -z "$(ls -A /opt/userscripts 2>/dev/null)" ]]; then
   echo -n "There is no data detected in /opt/userscripts. Restoring example userscripts... "
     tar -xf /opt/initial_userscripts.tar -C /
     chmod 755 /opt/userscripts/userscript_firststart_example.sh

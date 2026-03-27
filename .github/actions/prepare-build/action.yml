@@ -46,12 +46,4 @@ runs:
         echo "[LOG] GHCR Org: ${{ inputs.ghcr-org }}"
         echo "ghcr_org=${{ inputs.ghcr-org }}" >> $GITHUB_ENV
 
-    - name: Build metadata ready
-      shell: bash
-      run: |
-        VERSION="$(cat .VERSION)"
-        BUILD="${{ inputs.build-number }}"
-        echo "[LOG] Build metadata prepared for build args"
-        echo "[LOG] Version: ${VERSION}${{ inputs.version-suffix }}"
-        echo "[LOG] Build: $BUILD"
-        echo "[LOG] Node: ${{ inputs.node-version }}"
+

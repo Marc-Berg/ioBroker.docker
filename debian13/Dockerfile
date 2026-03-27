@@ -42,10 +42,8 @@ RUN apt-get update \
         udev \
         wget \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
-
-# Generate locales (combined with APT would be better, but keeping separate for now)
-RUN sed -i 's/^# *\(de_DE.UTF-8\)/\1/' /etc/locale.gen \
+    && rm -rf /var/lib/apt/lists/* \
+    && sed -i 's/^# *\(de_DE.UTF-8\)/\1/' /etc/locale.gen \
     && sed -i 's/^# *\(en_US.UTF-8\)/\1/' /etc/locale.gen \
     && locale-gen
 
