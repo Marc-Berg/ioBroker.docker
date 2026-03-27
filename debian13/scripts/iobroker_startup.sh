@@ -191,7 +191,7 @@ echo "-----             Step 2 of 5: Detecting ioBroker Installation            
 echo "$(printf -- '-%.0s' {1..80})"
 echo " "
 
-if [[ $(find /opt/iobroker -type f | wc -l) -lt 1 ]]; then
+if [[ -z "$(ls -A /opt/iobroker 2>/dev/null)" ]]; then
   echo "There is no data detected in /opt/iobroker."
   echo -n "Restoring initial ioBroker installation... "
     tar -xf /opt/initial_iobroker.tar -C /
@@ -358,6 +358,10 @@ fi
 if [[ "$multihost" == "slave" ]]; then
   echo "IOB_MULTIHOST is set to \"slave\". Hostname check will be skipped."
   echo " "
+elif [[ -f /opt/.docker_config/.hostname_cache && "$(cat /opt/.docker_config/.hostname_cache)" == "$(hostname)" ]]; then
+  echo "Hostname in ioBroker matches the hostname of this container."
+  echo "No action required (cached)."
+  echo " "
 else
   # get admin instance and hostname
   set +e
@@ -390,10 +394,12 @@ else
       gosu iobroker iob host "$adminhostname"
     echo "Done."
     echo " "
+    echo "$(hostname)" > /opt/.docker_config/.hostname_cache
   elif [[ "$adminhostname" = "$(hostname)" ]]; then
     echo "Hostname in ioBroker matches the hostname of this container."
     echo "No action required."
     echo " "
+    echo "$(hostname)" > /opt/.docker_config/.hostname_cache
   else
     echo "There was a problem checking the hostname."
     stop_on_error

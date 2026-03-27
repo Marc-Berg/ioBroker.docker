@@ -12,29 +12,22 @@ set -u
 export DEBIAN_FRONTEND=noninteractive
 
 check_package_preq() {
-  # check for influx packages
-  if [[ "$i" == "influxdb" || "$i" == "influxdb2-cli" ]]; then
-    # add influxdata repo keys
+  local pkg="$1"
+  # check for influx packages — adds external repo, no apt-get update here (done once before install)
+  if [[ "$pkg" == "influxdb" || "$pkg" == "influxdb2-cli" ]]; then
     wget -qO- https://repos.influxdata.com/influxdata-archive.key | gpg --dearmor | tee /usr/share/keyrings/influxdata-archive.gpg > /dev/null
     echo "deb [signed-by=/usr/share/keyrings/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main" | tee /etc/apt/sources.list.d/influxdata.list
-    apt-get -q update >> /opt/scripts/setup_packages.log 2>&1
   fi
 }
 
 check_package_validity() {
-  # check string for double spaces
-  while echo "$packages" | grep -q '  '; do
-    packages=$(echo "$packages" | sed 's/  / /g')
-  done
+  # normalize whitespace
+  packages=$(echo "$packages" | tr -s ' ' | xargs)
   # remove packages when "influxdb" AND "influxdb2-cli"
   if echo "$packages" | grep -qw "influxdb" && echo "$packages" | grep -qw "influxdb2-cli"; then
     echo "PACKAGES includes influxdb AND influxdb2-cli."
     echo "As installing both packages together is not possible, they will be skipped."
-    packages=$(echo "$packages" | sed 's/influxdb2-cli//g;s/influxdb//g')
-    # check string for double spaces again
-    while echo "$packages" | grep -q '  '; do
-      packages=$(echo "$packages" | sed 's/  / /g')
-    done
+    packages=$(echo "$packages" | sed 's/\binfluxdb2-cli\b//g;s/\binfluxdb\b//g' | tr -s ' ' | xargs)
     if [[ $debug == "true" ]]; then echo "[DEBUG] New list of packages: $packages"; fi
     echo " "
   fi
@@ -42,22 +35,20 @@ check_package_validity() {
 
 if [[ "$1" == "-install" ]]; then
   echo " "
-  apt-get -q update >> /opt/scripts/setup_packages.log 2>&1
   check_package_validity
+  # Run pre-reqs (e.g. adding external repos) and collect package list
   for i in $packages; do
-    if ! dpkg -s "$i" >/dev/null 2>&1; then
-      echo -n "$i is not installed. Installing... "
-      check_package_preq >> /opt/scripts/setup_packages.log 2>&1
-      if ! apt-get -q -y --no-install-recommends install "$i" >> /opt/scripts/setup_packages.log 2>&1; then
-        echo "Failed."
-        echo "For more details see \"/opt/scripts/setup_packages.log\"."
-      else
-        echo "Done."
-      fi
-    else
-      echo "$i is already installed."
-    fi
+    check_package_preq "$i" >> /opt/scripts/setup_packages.log 2>&1
   done
+  # Install all packages in a single call
+  echo -n "Installing packages ($packages)... "
+  apt-get -q update >> /opt/scripts/setup_packages.log 2>&1
+  if ! apt-get -q -y --no-install-recommends install $packages >> /opt/scripts/setup_packages.log 2>&1; then
+    echo "Failed."
+    echo "For more details see \"/opt/scripts/setup_packages.log\"."
+  else
+    echo "Done."
+  fi
 elif [[ "$1" == "-update" ]]; then
   echo -n "PACKAGES_UPDATE is set. Updating Linux packages on first run... "
   apt-get -q update >> /opt/scripts/setup_packages.log 2>&1
