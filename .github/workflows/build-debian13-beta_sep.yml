@@ -32,7 +32,7 @@ jobs:
           echo "[TIMING] Fetch prerelease: $(($(date +%s) - START_TIME))s"
 
       - name: Checkout repo (release tag)
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ env.RELEASE_TAG }}
@@ -88,7 +88,7 @@ jobs:
             arch: arm64v8
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
@@ -114,7 +114,7 @@ jobs:
 
       - name: Set up QEMU
         if: matrix.arch == 'arm64v8'
-        uses: docker/setup-qemu-action@v3.7.0
+        uses: docker/setup-qemu-action@v4.0.0
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4.0.0
@@ -139,11 +139,16 @@ jobs:
           file: ./debian13/Dockerfile
           platforms: ${{ matrix.platform }}
           push: true
+          build-args: |
+            NODE=${{ steps.set-node.outputs.node_version }}
+            VERSION=${{ needs.create-build-number.outputs.version }}
+            DATI=${{ needs.create-build-number.outputs.build_number }}
+            BUILD=${{ needs.create-build-number.outputs.build_number }}
           tags: |
             ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
             ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ needs.create-build-number.outputs.version }}-beta-build.${{ needs.create-build-number.outputs.build_number }}-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
-          cache-from: type=gha,scope=build-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
-          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
+          cache-from: type=gha,scope=build-beta-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
+          cache-to: type=gha,mode=max,scope=build-beta-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
 
       - name: Build timing
         run: echo "[TIMING] Build ${{ matrix.node_label }} Node${{ steps.set-node.outputs.node_version }} ${{ matrix.arch }} completed"

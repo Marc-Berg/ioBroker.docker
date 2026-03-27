@@ -1,4 +1,10 @@
+ARG NODE
 FROM node:${NODE}-trixie-slim
+
+ARG NODE
+ARG VERSION=unknown
+ARG DATI=unknown
+ARG BUILD=0
 
 
 LABEL org.opencontainers.image.title="Official ioBroker Docker Image" \

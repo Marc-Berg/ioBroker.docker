@@ -1,5 +1,5 @@
 name: 'Prepare Build Environment'
-description: 'Prepares build environment with version variables and template substitution'
+description: 'Prepares build environment with version variables and build metadata'
 inputs:
   version-suffix:
     description: 'Version suffix (empty, "-dev", or "-beta")'
@@ -46,22 +46,12 @@ runs:
         echo "[LOG] GHCR Org: ${{ inputs.ghcr-org }}"
         echo "ghcr_org=${{ inputs.ghcr-org }}" >> $GITHUB_ENV
 
-    - name: Template Dockerfile and scripts
+    - name: Build metadata ready
       shell: bash
       run: |
         VERSION="$(cat .VERSION)"
         BUILD="${{ inputs.build-number }}"
-        
-        # Set values in iobroker_startup.sh
-        sed -e "s/\${VERSION}/${VERSION}${{ inputs.version-suffix }}/" \
-            -e "s/\${BUILD}/$BUILD/" \
-            ./debian13/scripts/iobroker_startup.sh > ./debian13/scripts/iobroker_startup.tmp
-        mv -f ./debian13/scripts/iobroker_startup.tmp ./debian13/scripts/iobroker_startup.sh
-        
-        # Set values in Dockerfile
-        sed -e "s/\${VERSION}/${VERSION}/" \
-            -e "s/\${DATI}/$BUILD/" \
-            -e "s/\${BUILD}/$BUILD/" \
-            -e "s/\${NODE}/${{ inputs.node-version }}/" \
-            ./debian13/Dockerfile > ./debian13/Dockerfile.tmp
-        mv -f ./debian13/Dockerfile.tmp ./debian13/Dockerfile
+        echo "[LOG] Build metadata prepared for build args"
+        echo "[LOG] Version: ${VERSION}${{ inputs.version-suffix }}"
+        echo "[LOG] Build: $BUILD"
+        echo "[LOG] Node: ${{ inputs.node-version }}"
