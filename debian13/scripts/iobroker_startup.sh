@@ -196,7 +196,7 @@ echo " "
 if [[ -z "$(ls -A /opt/iobroker 2>/dev/null)" ]]; then
   echo "There is no data detected in /opt/iobroker."
   echo -n "Restoring initial ioBroker installation... "
-    tar -xf /opt/initial_iobroker.tar -C /
+    tar -xzf /opt/initial_iobroker.tar.gz -C /
   echo "Done."
 elif [[ -f /opt/iobroker/iobroker ]]; then
   echo "Existing installation of ioBroker detected in \"/opt/iobroker\"."
@@ -210,7 +210,7 @@ elif [[ "$(ls *_backupiobroker.tar.gz 2> /dev/null | wc -l)" != "0" && "$(tar -z
   echo " "
   echo -n "Copying backup file and restoring initial ioBroker installation... "
     mv /opt/iobroker/*.tar.gz /opt/
-    tar -xf /opt/initial_iobroker.tar -C /
+    tar -xzf /opt/initial_iobroker.tar.gz -C /
     mkdir /opt/iobroker/backups
     mv /opt/*.tar.gz /opt/iobroker/backups/
     # fixing permission errors during restore
@@ -510,7 +510,7 @@ fi
 # Checking for Userscripts in /opt/userscripts
 if [[ -z "$(ls -A /opt/userscripts 2>/dev/null)" ]]; then
   echo -n "There is no data detected in /opt/userscripts. Restoring example userscripts... "
-    tar -xf /opt/initial_userscripts.tar -C /
+    tar -xzf /opt/initial_userscripts.tar.gz -C /
     chmod 755 /opt/userscripts/userscript_firststart_example.sh
     chmod 755 /opt/userscripts/userscript_everystart_example.sh
   echo "Done."

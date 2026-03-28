@@ -64,8 +64,9 @@ RUN mkdir /opt/.docker_config \
     && rm install.sh \
     && iobroker unsetup -y \
     && echo "true" > /opt/iobroker/.fresh_install \
-    && tar -cf /opt/initial_iobroker.tar /opt/iobroker \
-    && tar -cf /opt/initial_userscripts.tar /opt/userscripts \
+    && tar -czf /opt/initial_iobroker.tar.gz /opt/iobroker \
+    && rm -rf /opt/iobroker && mkdir /opt/iobroker \
+    && tar -czf /opt/initial_userscripts.tar.gz /opt/userscripts \
     && if id -u 1000 >/dev/null 2>&1 && [ "$(id -un 1000)" != "iobroker" ]; then userdel -r $(id -un 1000) 2>/dev/null || true; fi \
     && if getent group 1000 >/dev/null 2>&1 && [ "$(getent group 1000 | cut -d: -f1)" != "iobroker" ]; then groupdel $(getent group 1000 | cut -d: -f1) 2>/dev/null || true; fi \
     && chsh -s /bin/bash iobroker \
