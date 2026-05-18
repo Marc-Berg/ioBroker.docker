@@ -8,28 +8,30 @@ on:
 
 jobs:
   create-build-number:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && github.event.release.prerelease == false && !contains(github.event.release.tag_name, 'beta') && !contains(github.event.release.tag_name, 'dev') && !contains(github.event.release.tag_name, 'rc'))
     name: Create build number
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.generate-build-number.outputs.build_number }}
-      release_tag: ${{ steps.fetch-release-tag.outputs.release_tag }}
+      release_tag: ${{ steps.set-release-tag.outputs.release_tag }}
       version: ${{ steps.read-version.outputs.version }}
       majorversion: ${{ steps.read-version.outputs.majorversion }}
       ghcr_org: ${{ steps.lowercase-ghcr.outputs.org }}
     steps:
-      - name: Fetch latest release tag
-        id: fetch-release-tag
+      - name: Set release tag from event/manual input
+        id: set-release-tag
         run: |
-          START_TIME=$(date +%s)
-          LATESTRELEASE="$(curl -sL https://api.github.com/repos/${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}/releases/latest | jq -r '.tag_name')"
-          if [ -z "$LATESTRELEASE" ]; then
-            echo "[LOG] No release found!" >&2
+          RELEASE_TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$RELEASE_TAG" ]; then
+            RELEASE_TAG="${{ github.ref_name }}"
+          fi
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "[LOG] No release tag available." >&2
             exit 1
           fi
-          echo "RELEASE_TAG=$LATESTRELEASE" >> $GITHUB_ENV
-          echo "release_tag=$LATESTRELEASE" >> $GITHUB_OUTPUT
-          echo "[LOG] Latest release tag: $LATESTRELEASE"
-          echo "[TIMING] Fetch release: $(($(date +%s) - START_TIME))s"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "[LOG] Release tag from event/ref: $RELEASE_TAG"
 
       - name: Checkout repo (main for build number commit)
         uses: actions/checkout@v6.0.2

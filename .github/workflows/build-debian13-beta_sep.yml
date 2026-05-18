@@ -3,33 +3,35 @@ name: Build Debian 13 Image (beta)
 
 on:
   release:
-    types: [prereleased]
+    types: [prereleased, released]
   workflow_dispatch:
 
 jobs:
   create-build-number:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && (github.event.release.prerelease == true || contains(github.event.release.tag_name, 'beta')))
     name: Create build number
     runs-on: ubuntu-latest
     outputs:
       build_number: ${{ steps.generate-build-number.outputs.build_number }}
-      release_tag: ${{ steps.fetch-prerelease-tag.outputs.release_tag }}
+      release_tag: ${{ steps.set-release-tag.outputs.release_tag }}
       version: ${{ steps.read-version.outputs.version }}
       majorversion: ${{ steps.read-version.outputs.majorversion }}
       ghcr_org: ${{ steps.lowercase-ghcr.outputs.org }}
     steps:
-      - name: Fetch prerelease tag
-        id: fetch-prerelease-tag
+      - name: Set release tag from event/manual input
+        id: set-release-tag
         run: |
-          START_TIME=$(date +%s)
-          PRERELEASE_TAG=$(curl -sL "https://api.github.com/repos/${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}/releases" | jq -r '[.[] | select(.prerelease)][0].tag_name')
-          if [ -z "$PRERELEASE_TAG" ] || [ "$PRERELEASE_TAG" = "null" ]; then
-            echo "[LOG] No prerelease found!" >&2
+          RELEASE_TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$RELEASE_TAG" ]; then
+            RELEASE_TAG="${{ github.ref_name }}"
+          fi
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "[LOG] No release tag available." >&2
             exit 1
           fi
-          echo "RELEASE_TAG=$PRERELEASE_TAG" >> $GITHUB_ENV
-          echo "release_tag=$PRERELEASE_TAG" >> $GITHUB_OUTPUT
-          echo "[LOG] Prerelease tag: $PRERELEASE_TAG"
-          echo "[TIMING] Fetch prerelease: $(($(date +%s) - START_TIME))s"
+          echo "RELEASE_TAG=$RELEASE_TAG" >> $GITHUB_ENV
+          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "[LOG] Release tag from event/ref: $RELEASE_TAG"
 
       - name: Checkout repo (release tag)
         uses: actions/checkout@v6.0.2
@@ -63,6 +65,7 @@ jobs:
 
   build-beta-images:
     name: Build beta images
+    if: matrix.node_version_var == 'RECOMMENDED_NODE_VERSION_BETA' || replace(vars.EXPERIMENTAL_NODE_VERSION_BETA, ' ', '') != ''
     needs: [create-build-number]
     runs-on: ubuntu-latest
     strategy:
@@ -155,6 +158,7 @@ jobs:
 
   create-multiarch-images:
     name: Create multiarch manifests for Node${{ matrix.node_version }}
+    if: matrix.node_version_var == 'RECOMMENDED_NODE_VERSION_BETA' || replace(vars.EXPERIMENTAL_NODE_VERSION_BETA, ' ', '') != ''
     runs-on: ubuntu-latest
     needs: [build-beta-images, create-build-number]
     strategy:

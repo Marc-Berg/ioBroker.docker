@@ -48,6 +48,7 @@ jobs:
 
   build-dev-images:
     name: Build dev images
+    if: matrix.node_version_var == 'RECOMMENDED_NODE_VERSION_DEV' || replace(vars.EXPERIMENTAL_NODE_VERSION_DEV, ' ', '') != ''
     needs: [create-build-number]
     runs-on: ubuntu-latest
     strategy:
@@ -140,6 +141,7 @@ jobs:
 
   create-multiarch-images:
     name: Create multiarch manifests for Node${{ matrix.node_version }}
+    if: matrix.node_version_var == 'RECOMMENDED_NODE_VERSION_DEV' || replace(vars.EXPERIMENTAL_NODE_VERSION_DEV, ' ', '') != ''
     runs-on: ubuntu-latest
     needs: [build-dev-images, create-build-number]
     strategy:
