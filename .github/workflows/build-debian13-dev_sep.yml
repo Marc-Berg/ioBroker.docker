@@ -13,6 +13,8 @@ jobs:
       version: ${{ steps.read-version.outputs.version }}
       majorversion: ${{ steps.read-version.outputs.majorversion }}
       ghcr_org: ${{ steps.lowercase-ghcr.outputs.org }}
+      build_matrix: ${{ steps.generate-matrix.outputs.build_matrix }}
+      manifest_matrix: ${{ steps.generate-matrix.outputs.manifest_matrix }}
     steps:
       - name: Checkout repo (main branch)
         uses: actions/checkout@v6.0.2
@@ -46,31 +48,31 @@ jobs:
           echo "build_number=$BUILD" >> $GITHUB_OUTPUT
           echo "[LOG] Buildnumber: $BUILD"
 
+      - name: Generate build matrix
+        id: generate-matrix
+        run: |
+          # Check if experimental version is set and not just whitespace
+          EXP_VERSION="$(printf '%s' '${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}' | tr -d '[:space:]')"
+
+          if [ -z "$EXP_VERSION" ]; then
+            # Only recommended
+            BUILD_MATRIX='[{"node_version_var":"RECOMMENDED_NODE_VERSION_DEV","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"RECOMMENDED_NODE_VERSION_DEV","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"}]'
+            MANIFEST_MATRIX='[{"node_version_var":"RECOMMENDED_NODE_VERSION_DEV","node_label":"recommended"}]'
+          else
+            # Recommended + experimental
+            BUILD_MATRIX='[{"node_version_var":"RECOMMENDED_NODE_VERSION_DEV","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"RECOMMENDED_NODE_VERSION_DEV","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_DEV","node_label":"experimental","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_DEV","node_label":"experimental","platform":"linux/arm64/v8","arch":"arm64v8"}]'
+            MANIFEST_MATRIX='[{"node_version_var":"RECOMMENDED_NODE_VERSION_DEV","node_label":"recommended"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_DEV","node_label":"experimental"}]'
+          fi
+          echo "build_matrix=$BUILD_MATRIX" >> $GITHUB_OUTPUT
+          echo "manifest_matrix=$MANIFEST_MATRIX" >> $GITHUB_OUTPUT
+          echo "[LOG] Build matrix: $BUILD_MATRIX"
+
   build-dev-images:
     name: Build dev images
     needs: [create-build-number]
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        include:
-          # Recommended Node Version
-          - node_version_var: RECOMMENDED_NODE_VERSION_DEV
-            node_label: recommended
-            platform: linux/amd64
-            arch: amd64
-          - node_version_var: RECOMMENDED_NODE_VERSION_DEV
-            node_label: recommended
-            platform: linux/arm64/v8
-            arch: arm64v8
-          # Experimental Node Version
-          - node_version_var: EXPERIMENTAL_NODE_VERSION_DEV
-            node_label: experimental
-            platform: linux/amd64
-            arch: amd64
-          - node_version_var: EXPERIMENTAL_NODE_VERSION_DEV
-            node_label: experimental
-            platform: linux/arm64/v8
-            arch: arm64v8
+      matrix: ${{ fromJSON(needs.create-build-number.outputs.build_matrix) }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6.0.2
@@ -84,18 +86,12 @@ jobs:
           if [ "${{ matrix.node_version_var }}" = "RECOMMENDED_NODE_VERSION_DEV" ]; then
             NODE_VERSION="${{ vars.RECOMMENDED_NODE_VERSION_DEV }}"
           else
-            NODE_VERSION="$(printf '%s' '${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}' | tr -d '[:space:]')"
-          fi
-          if [ -z "$NODE_VERSION" ]; then
-            echo "[LOG] Experimental Node version is empty or blank. Skipping this matrix entry."
-            echo "node_version=" >> $GITHUB_OUTPUT
-            exit 0
+            NODE_VERSION="${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}"
           fi
           echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
           echo "[LOG] Using Node.js version: $NODE_VERSION"
 
       - name: Prepare build environment
-        if: steps.set-node.outputs.node_version != ''
         uses: ./.github/actions/prepare-build
         with:
           version-suffix: '-dev'
@@ -104,22 +100,19 @@ jobs:
           ghcr-org: ${{ needs.create-build-number.outputs.ghcr_org }}
 
       - name: Set up QEMU
-        if: steps.set-node.outputs.node_version != '' && matrix.arch == 'arm64v8'
+        if: matrix.arch == 'arm64v8'
         uses: docker/setup-qemu-action@v4.0.0
 
       - name: Set up Docker Buildx
-        if: steps.set-node.outputs.node_version != ''
         uses: docker/setup-buildx-action@v4.0.0
 
       - name: Login to DockerHub
-        if: steps.set-node.outputs.node_version != ''
         uses: docker/login-action@v4.0.0
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Login to GitHub Container Registry
-        if: steps.set-node.outputs.node_version != ''
         uses: docker/login-action@v4.0.0
         with:
           registry: ghcr.io
@@ -127,7 +120,6 @@ jobs:
           password: ${{ secrets.PACKAGES_PASS }}
 
       - name: Build and push Docker image
-        if: steps.set-node.outputs.node_version != ''
         uses: docker/build-push-action@v7.0.0
         with:
           context: ./debian13
@@ -146,7 +138,6 @@ jobs:
           cache-to: type=gha,mode=max,scope=build-dev-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
 
       - name: Build timing
-        if: steps.set-node.outputs.node_version != ''
         run: echo "[TIMING] Build ${{ matrix.node_label }} Node${{ steps.set-node.outputs.node_version }} ${{ matrix.arch }} completed"
 
   create-multiarch-images:
@@ -154,12 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-dev-images, create-build-number]
     strategy:
-      matrix:
-        include:
-          - node_version_var: RECOMMENDED_NODE_VERSION_DEV
-            node_label: recommended
-          - node_version_var: EXPERIMENTAL_NODE_VERSION_DEV
-            node_label: experimental
+      matrix: ${{ fromJSON(needs.create-build-number.outputs.manifest_matrix) }}
     steps:
       - name: Set Node version
         id: set-node
@@ -167,25 +153,18 @@ jobs:
           if [ "${{ matrix.node_version_var }}" = "RECOMMENDED_NODE_VERSION_DEV" ]; then
             NODE_VERSION="${{ vars.RECOMMENDED_NODE_VERSION_DEV }}"
           else
-            NODE_VERSION="$(printf '%s' '${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}' | tr -d '[:space:]')"
-          fi
-          if [ -z "$NODE_VERSION" ]; then
-            echo "[LOG] Experimental Node version is empty or blank. Skipping this matrix entry."
-            echo "node_version=" >> $GITHUB_OUTPUT
-            exit 0
+            NODE_VERSION="${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}"
           fi
           echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
           echo "[LOG] Creating manifests for Node.js version: $NODE_VERSION"
 
       - name: Login to DockerHub
-        if: steps.set-node.outputs.node_version != ''
         uses: docker/login-action@v4.0.0
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Login to GitHub Container Registry
-        if: steps.set-node.outputs.node_version != ''
         uses: docker/login-action@v4.0.0
         with:
           registry: ghcr.io
@@ -193,30 +172,29 @@ jobs:
           password: ${{ secrets.PACKAGES_PASS }}
 
       - name: Create and push multi-platform manifests
-        if: steps.set-node.outputs.node_version != ''
         run: |
           START_TIME=$(date +%s)
-          
+
           NODE_VERSION="${{ steps.set-node.outputs.node_version }}"
           VERSION="${{ needs.create-build-number.outputs.version }}"
           BUILD="${{ needs.create-build-number.outputs.build_number }}"
-          
+
           # Define tags to create
           TAGS=(
             "dev-node${NODE_VERSION}"
             "${VERSION}-dev-node${NODE_VERSION}"
             "${VERSION}-dev-build.${BUILD}-node${NODE_VERSION}"
           )
-          
+
           # Define registries
           REGISTRIES=(
             "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}"
             "ghcr.io/${{ needs.create-build-number.outputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}"
           )
-          
+
           # Source image tag
           BUILD_TAG="${VERSION}-dev-build.${BUILD}"
-          
+
           # Create manifests for each tag and registry
           for TAG in "${TAGS[@]}"; do
             for REGISTRY in "${REGISTRIES[@]}"; do
@@ -227,5 +205,5 @@ jobs:
                 "${REGISTRY}:${BUILD_TAG}-amd64-node${NODE_VERSION}"
             done
           done
-          
+
           echo "[TIMING] Manifest creation for Node${NODE_VERSION}: $(($(date +%s) - START_TIME))s"
