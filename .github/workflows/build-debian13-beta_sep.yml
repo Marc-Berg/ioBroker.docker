@@ -73,12 +73,12 @@ jobs:
 
           if [ -z "$EXP_VERSION" ]; then
             # Only recommended
-            BUILD_MATRIX='[{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"}]'
-            MANIFEST_MATRIX='[{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended"}]'
+            BUILD_MATRIX='{"include":[{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"}]}'
+            MANIFEST_MATRIX='{"include":[{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended"}]}'
           else
             # Recommended + experimental
-            BUILD_MATRIX='[{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_BETA","node_label":"experimental","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_BETA","node_label":"experimental","platform":"linux/arm64/v8","arch":"arm64v8"}]'
-            MANIFEST_MATRIX='[{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_BETA","node_label":"experimental"}]'
+            BUILD_MATRIX='{"include":[{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_BETA","node_label":"experimental","platform":"linux/amd64","arch":"amd64"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_BETA","node_label":"experimental","platform":"linux/arm64/v8","arch":"arm64v8"}]}'
+            MANIFEST_MATRIX='{"include":[{"node_version_var":"RECOMMENDED_NODE_VERSION_BETA","node_label":"recommended"},{"node_version_var":"EXPERIMENTAL_NODE_VERSION_BETA","node_label":"experimental"}]}'
           fi
           echo "build_matrix=$BUILD_MATRIX" >> $GITHUB_OUTPUT
           echo "manifest_matrix=$MANIFEST_MATRIX" >> $GITHUB_OUTPUT
