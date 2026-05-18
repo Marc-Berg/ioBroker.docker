@@ -1,0 +1,49 @@
+# Github action to build Debian 13 image (Tag: dev)
+name: Build Debian 13 Image (dev)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-build-number:
+    name: Create build number
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.generate-build-number.outputs.build_number }}
+      version: ${{ steps.read-version.outputs.version }}
+      ghcr_org: ${{ steps.lowercase-ghcr.outputs.org }}
+    steps:
+      - name: Checkout repo (main branch)
+        uses: actions/checkout@v6.0.2
+        with:
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          ref: main
+
+      - name: Read version
+        id: read-version
+        run: echo "version=$(cat .VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Convert GHCR_ORG to lowercase
+        id: lowercase-ghcr
+        run: echo "org=$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Generate build number
+        id: generate-build-number
+        run: |
+          BUILD="$(date +"%Y%m%d.%H%M%S")"
+          echo "build_number=$BUILD" >> $GITHUB_OUTPUT
+          echo "[LOG] Buildnumber: $BUILD"
+
+  build-and-publish:
+    name: Build and publish dev images
+    needs: [create-build-number]
+    uses: ./.github/workflows/_build-debian13-core.yml
+    with:
+      track: dev
+      checkout_ref: main
+      node_version: ${{ vars.RECOMMENDED_NODE_VERSION_DEV }}
+      experimental_node_version: ${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}
+      build_number: ${{ needs.create-build-number.outputs.build_number }}
+      version: ${{ needs.create-build-number.outputs.version }}
+      ghcr_org: ${{ needs.create-build-number.outputs.ghcr_org }}
+    secrets: inherit

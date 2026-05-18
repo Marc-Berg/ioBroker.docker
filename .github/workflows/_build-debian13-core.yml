@@ -1,0 +1,184 @@
+# Reusable workflow: Docker image build + manifest creation for beta and dev tracks
+name: Build Debian 13 Image (core)
+
+on:
+  workflow_call:
+    inputs:
+      track:
+        description: 'Build track identifier (beta or dev)'
+        required: true
+        type: string
+      checkout_ref:
+        description: 'Git ref to check out for building'
+        required: true
+        type: string
+      node_version:
+        description: 'Primary recommended Node.js version'
+        required: true
+        type: string
+      experimental_node_version:
+        description: 'Optional experimental Node.js version (empty or whitespace = skip)'
+        required: false
+        type: string
+        default: ''
+      build_number:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+      ghcr_org:
+        description: 'GHCR organization name (must be lowercase)'
+        required: true
+        type: string
+    secrets:
+      DOCKER_USER:
+        required: true
+      DOCKER_PASS:
+        required: true
+      PACKAGES_USER:
+        required: true
+      PACKAGES_PASS:
+        required: true
+
+jobs:
+  generate-matrix:
+    name: Generate build matrix
+    runs-on: ubuntu-latest
+    outputs:
+      build_matrix: ${{ steps.matrix.outputs.build_matrix }}
+      manifest_matrix: ${{ steps.matrix.outputs.manifest_matrix }}
+    steps:
+      - name: Generate matrix from Node versions
+        id: matrix
+        run: |
+          NODE="${{ inputs.node_version }}"
+          EXP_VERSION="$(printf '%s' '${{ inputs.experimental_node_version }}' | tr -d '[:space:]')"
+
+          if [ -z "$EXP_VERSION" ]; then
+            BUILD_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"}]}'
+            MANIFEST_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended"}]}'
+          else
+            BUILD_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"},{"node_version":"'"$EXP_VERSION"'","node_label":"experimental","platform":"linux/amd64","arch":"amd64"},{"node_version":"'"$EXP_VERSION"'","node_label":"experimental","platform":"linux/arm64/v8","arch":"arm64v8"}]}'
+            MANIFEST_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended"},{"node_version":"'"$EXP_VERSION"'","node_label":"experimental"}]}'
+          fi
+
+          echo "build_matrix=$BUILD_MATRIX" >> $GITHUB_OUTPUT
+          echo "manifest_matrix=$MANIFEST_MATRIX" >> $GITHUB_OUTPUT
+          echo "[LOG] Build matrix: $BUILD_MATRIX"
+
+  build-images:
+    name: Build ${{ inputs.track }} image (${{ matrix.node_label }}, ${{ matrix.arch }})
+    needs: [generate-matrix]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.build_matrix) }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.2
+        with:
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          ref: ${{ inputs.checkout_ref }}
+
+      - name: Prepare build environment
+        uses: ./.github/actions/prepare-build
+        with:
+          version-suffix: '-${{ inputs.track }}'
+          node-version: ${{ matrix.node_version }}
+          build-number: ${{ inputs.build_number }}
+          ghcr-org: ${{ inputs.ghcr_org }}
+
+      - name: Set up QEMU
+        if: matrix.arch == 'arm64v8'
+        uses: docker/setup-qemu-action@v4.0.0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4.0.0
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v4.0.0
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PACKAGES_USER }}
+          password: ${{ secrets.PACKAGES_PASS }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v7.0.0
+        with:
+          context: ./debian13
+          file: ./debian13/Dockerfile
+          platforms: ${{ matrix.platform }}
+          push: true
+          build-args: |
+            NODE=${{ matrix.node_version }}
+            VERSION=${{ inputs.version }}
+            DATI=${{ inputs.build_number }}
+            BUILD=${{ inputs.build_number }}
+          tags: |
+            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ inputs.version }}-${{ inputs.track }}-build.${{ inputs.build_number }}-${{ matrix.arch }}-node${{ matrix.node_version }}
+            ghcr.io/${{ inputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ inputs.version }}-${{ inputs.track }}-build.${{ inputs.build_number }}-${{ matrix.arch }}-node${{ matrix.node_version }}
+          cache-from: type=gha,scope=build-${{ inputs.track }}-${{ matrix.arch }}-node${{ matrix.node_version }}
+          cache-to: type=gha,mode=max,scope=build-${{ inputs.track }}-${{ matrix.arch }}-node${{ matrix.node_version }}
+
+      - name: Build timing
+        run: echo "[TIMING] Build ${{ matrix.node_label }} Node${{ matrix.node_version }} ${{ matrix.arch }} completed"
+
+  create-manifests:
+    name: Create multiarch manifests (Node ${{ matrix.node_version }})
+    runs-on: ubuntu-latest
+    needs: [build-images, generate-matrix]
+    strategy:
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.manifest_matrix) }}
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v4.0.0
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4.0.0
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PACKAGES_USER }}
+          password: ${{ secrets.PACKAGES_PASS }}
+
+      - name: Create and push multi-platform manifests
+        run: |
+          START_TIME=$(date +%s)
+
+          NODE_VERSION="${{ matrix.node_version }}"
+          VERSION="${{ inputs.version }}"
+          BUILD="${{ inputs.build_number }}"
+          TRACK="${{ inputs.track }}"
+
+          TAGS=(
+            "${TRACK}-node${NODE_VERSION}"
+            "${VERSION}-${TRACK}-node${NODE_VERSION}"
+            "${VERSION}-${TRACK}-build.${BUILD}-node${NODE_VERSION}"
+          )
+
+          REGISTRIES=(
+            "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}"
+            "ghcr.io/${{ inputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}"
+          )
+
+          BUILD_TAG="${VERSION}-${TRACK}-build.${BUILD}"
+
+          for TAG in "${TAGS[@]}"; do
+            for REGISTRY in "${REGISTRIES[@]}"; do
+              echo "[LOG] Creating manifest: ${REGISTRY}:${TAG}"
+              docker buildx imagetools create \
+                -t "${REGISTRY}:${TAG}" \
+                "${REGISTRY}:${BUILD_TAG}-arm64v8-node${NODE_VERSION}" \
+                "${REGISTRY}:${BUILD_TAG}-amd64-node${NODE_VERSION}"
+            done
+          done
+
+          echo "[TIMING] Manifest creation for Node${NODE_VERSION}: $(($(date +%s) - START_TIME))s"

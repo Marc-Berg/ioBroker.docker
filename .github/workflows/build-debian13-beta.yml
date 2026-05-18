@@ -1,0 +1,67 @@
+# Github action to build Debian 13 image (Tag: beta)
+name: Build Debian 13 Image (beta)
+
+on:
+  release:
+    types: [prereleased, released]
+  workflow_dispatch:
+
+jobs:
+  create-build-number:
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'release' && (github.event.release.prerelease == true || contains(github.event.release.tag_name, 'beta')))
+    name: Create build number
+    runs-on: ubuntu-latest
+    outputs:
+      build_number: ${{ steps.generate-build-number.outputs.build_number }}
+      release_tag: ${{ steps.set-release-tag.outputs.release_tag }}
+      version: ${{ steps.read-version.outputs.version }}
+      ghcr_org: ${{ steps.lowercase-ghcr.outputs.org }}
+    steps:
+      - name: Set release tag from event/manual input
+        id: set-release-tag
+        run: |
+          RELEASE_TAG="${{ github.event.release.tag_name }}"
+          if [ -z "$RELEASE_TAG" ]; then
+            RELEASE_TAG="${{ github.ref_name }}"
+          fi
+          if [ -z "$RELEASE_TAG" ]; then
+            echo "[LOG] No release tag available." >&2
+            exit 1
+          fi
+          echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
+          echo "[LOG] Release tag: $RELEASE_TAG"
+
+      - name: Checkout repo
+        uses: actions/checkout@v6.0.2
+        with:
+          repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
+          ref: ${{ steps.set-release-tag.outputs.release_tag }}
+
+      - name: Read version
+        id: read-version
+        run: echo "version=$(cat .VERSION)" >> $GITHUB_OUTPUT
+
+      - name: Convert GHCR_ORG to lowercase
+        id: lowercase-ghcr
+        run: echo "org=$(echo '${{ vars.GHCR_ORG }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Generate build number
+        id: generate-build-number
+        run: |
+          BUILD="$(date +"%Y%m%d.%H%M%S")"
+          echo "build_number=$BUILD" >> $GITHUB_OUTPUT
+          echo "[LOG] Buildnumber: $BUILD"
+
+  build-and-publish:
+    name: Build and publish beta images
+    needs: [create-build-number]
+    uses: ./.github/workflows/_build-debian13-core.yml
+    with:
+      track: beta
+      checkout_ref: ${{ needs.create-build-number.outputs.release_tag }}
+      node_version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}
+      experimental_node_version: ${{ vars.EXPERIMENTAL_NODE_VERSION_BETA }}
+      build_number: ${{ needs.create-build-number.outputs.build_number }}
+      version: ${{ needs.create-build-number.outputs.version }}
+      ghcr_org: ${{ needs.create-build-number.outputs.ghcr_org }}
+    secrets: inherit

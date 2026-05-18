@@ -1,4 +1,4 @@
-# Github action to build Debian13 image (Tag: latest)
+# Github action to build Debian 13 image (Tag: latest)
 name: Build Debian 13 Image (latest)
 
 on:
