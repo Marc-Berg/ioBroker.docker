@@ -48,7 +48,6 @@ jobs:
 
   build-dev-images:
     name: Build dev images
-    if: matrix.node_version_var == 'RECOMMENDED_NODE_VERSION_DEV' || replace(vars.EXPERIMENTAL_NODE_VERSION_DEV, ' ', '') != ''
     needs: [create-build-number]
     runs-on: ubuntu-latest
     strategy:
@@ -85,12 +84,18 @@ jobs:
           if [ "${{ matrix.node_version_var }}" = "RECOMMENDED_NODE_VERSION_DEV" ]; then
             NODE_VERSION="${{ vars.RECOMMENDED_NODE_VERSION_DEV }}"
           else
-            NODE_VERSION="${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}"
+            NODE_VERSION="$(printf '%s' '${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}' | tr -d '[:space:]')"
+          fi
+          if [ -z "$NODE_VERSION" ]; then
+            echo "[LOG] Experimental Node version is empty or blank. Skipping this matrix entry."
+            echo "node_version=" >> $GITHUB_OUTPUT
+            exit 0
           fi
           echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
           echo "[LOG] Using Node.js version: $NODE_VERSION"
 
       - name: Prepare build environment
+        if: steps.set-node.outputs.node_version != ''
         uses: ./.github/actions/prepare-build
         with:
           version-suffix: '-dev'
@@ -99,19 +104,22 @@ jobs:
           ghcr-org: ${{ needs.create-build-number.outputs.ghcr_org }}
 
       - name: Set up QEMU
-        if: matrix.arch == 'arm64v8'
+        if: steps.set-node.outputs.node_version != '' && matrix.arch == 'arm64v8'
         uses: docker/setup-qemu-action@v4.0.0
 
       - name: Set up Docker Buildx
+        if: steps.set-node.outputs.node_version != ''
         uses: docker/setup-buildx-action@v4.0.0
 
       - name: Login to DockerHub
+        if: steps.set-node.outputs.node_version != ''
         uses: docker/login-action@v4.0.0
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Login to GitHub Container Registry
+        if: steps.set-node.outputs.node_version != ''
         uses: docker/login-action@v4.0.0
         with:
           registry: ghcr.io
@@ -119,6 +127,7 @@ jobs:
           password: ${{ secrets.PACKAGES_PASS }}
 
       - name: Build and push Docker image
+        if: steps.set-node.outputs.node_version != ''
         uses: docker/build-push-action@v7.0.0
         with:
           context: ./debian13
@@ -137,11 +146,11 @@ jobs:
           cache-to: type=gha,mode=max,scope=build-dev-${{ matrix.arch }}-node${{ steps.set-node.outputs.node_version }}
 
       - name: Build timing
+        if: steps.set-node.outputs.node_version != ''
         run: echo "[TIMING] Build ${{ matrix.node_label }} Node${{ steps.set-node.outputs.node_version }} ${{ matrix.arch }} completed"
 
   create-multiarch-images:
     name: Create multiarch manifests for Node${{ matrix.node_version }}
-    if: matrix.node_version_var == 'RECOMMENDED_NODE_VERSION_DEV' || replace(vars.EXPERIMENTAL_NODE_VERSION_DEV, ' ', '') != ''
     runs-on: ubuntu-latest
     needs: [build-dev-images, create-build-number]
     strategy:
@@ -158,18 +167,25 @@ jobs:
           if [ "${{ matrix.node_version_var }}" = "RECOMMENDED_NODE_VERSION_DEV" ]; then
             NODE_VERSION="${{ vars.RECOMMENDED_NODE_VERSION_DEV }}"
           else
-            NODE_VERSION="${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}"
+            NODE_VERSION="$(printf '%s' '${{ vars.EXPERIMENTAL_NODE_VERSION_DEV }}' | tr -d '[:space:]')"
+          fi
+          if [ -z "$NODE_VERSION" ]; then
+            echo "[LOG] Experimental Node version is empty or blank. Skipping this matrix entry."
+            echo "node_version=" >> $GITHUB_OUTPUT
+            exit 0
           fi
           echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
           echo "[LOG] Creating manifests for Node.js version: $NODE_VERSION"
 
       - name: Login to DockerHub
+        if: steps.set-node.outputs.node_version != ''
         uses: docker/login-action@v4.0.0
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Login to GitHub Container Registry
+        if: steps.set-node.outputs.node_version != ''
         uses: docker/login-action@v4.0.0
         with:
           registry: ghcr.io
@@ -177,6 +193,7 @@ jobs:
           password: ${{ secrets.PACKAGES_PASS }}
 
       - name: Create and push multi-platform manifests
+        if: steps.set-node.outputs.node_version != ''
         run: |
           START_TIME=$(date +%s)
           
