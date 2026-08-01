@@ -21,7 +21,6 @@ ENV DEBIAN_FRONTEND="noninteractive"
 
 # Install system packages (cached layer)
 RUN apt-get update \
-    && apt-get upgrade -y \
     && apt-get install -q -y --no-install-recommends \
         apt-utils \
         ca-certificates \
