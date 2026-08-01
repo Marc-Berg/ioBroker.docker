@@ -34,7 +34,7 @@ jobs:
           echo "[LOG] Release tag from event/ref: $RELEASE_TAG"
 
       - name: Checkout repo (main for build number commit)
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           token: ${{ secrets.ACTIONS_PAT }}
@@ -58,7 +58,7 @@ jobs:
           git push
 
       - name: Checkout repo (release tag for builds)
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ env.RELEASE_TAG }}
@@ -93,7 +93,7 @@ jobs:
             arch: arm64v8
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}
@@ -218,7 +218,7 @@ jobs:
             arch: arm64v8
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ needs.create-build-number.outputs.release_tag }}

@@ -75,7 +75,7 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.build_matrix) }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6.0.2
+        uses: actions/checkout@v7.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           ref: ${{ inputs.checkout_ref }}
