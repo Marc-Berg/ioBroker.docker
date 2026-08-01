@@ -63,9 +63,10 @@ jobs:
   build-and-publish:
     name: Build and publish prerelease images
     needs: [create-build-number]
-    uses: ./.github/workflows/_build-debian13-core.yml
+    uses: ./.github/workflows/_build-debian13-shared.yml
     with:
       track: beta
+      version_suffix: '-beta'
       checkout_ref: ${{ needs.create-build-number.outputs.release_tag }}
       node_version: ${{ vars.RECOMMENDED_NODE_VERSION_BETA }}
       build_number: ${{ needs.create-build-number.outputs.build_number }}

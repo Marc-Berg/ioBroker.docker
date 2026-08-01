@@ -1,11 +1,15 @@
 # Reusable workflow: Docker image build + manifest creation for prerelease images
-name: Build Debian 13 Image (core)
+name: Build Debian 13 Image (shared)
 
 on:
   workflow_call:
     inputs:
       track:
-        description: 'Build track identifier (for example beta)'
+        description: 'Build track identifier (for example beta or latest)'
+        required: true
+        type: string
+      version_suffix:
+        description: 'Version suffix for prerelease builds (for example "-beta" or empty for latest)'
         required: true
         type: string
       checkout_ref:
@@ -26,6 +30,26 @@ on:
         description: 'GHCR organization name (must be lowercase)'
         required: true
         type: string
+      dockerhub_org:
+        description: 'DockerHub organization for image publishing (empty = primary org var)'
+        required: false
+        type: string
+        default: ''
+      manifest_tags_csv:
+        description: 'Optional comma-separated manifest tags. Empty = auto tags by track/version'
+        required: false
+        type: string
+        default: ''
+      include_node_in_tags:
+        description: 'Whether tags should contain node version suffixes'
+        required: false
+        type: boolean
+        default: true
+      publish_ghcr:
+        description: 'Whether to also publish tags to GHCR'
+        required: false
+        type: boolean
+        default: true
     secrets:
       DOCKER_USER:
         required: true
@@ -71,10 +95,50 @@ jobs:
       - name: Prepare build environment
         uses: ./.github/actions/prepare-build
         with:
-          version-suffix: '-${{ inputs.track }}'
+          version-suffix: ${{ inputs.version_suffix }}
           node-version: ${{ matrix.node_version }}
           build-number: ${{ inputs.build_number }}
           ghcr-org: ${{ inputs.ghcr_org }}
+
+      - name: Prepare image tags
+        id: tag-config
+        shell: bash
+        run: |
+          VERSION="${{ inputs.version }}"
+          SUFFIX="${{ inputs.version_suffix }}"
+          BUILD="${{ inputs.build_number }}"
+          ARCH="${{ matrix.arch }}"
+          NODE_VERSION="${{ matrix.node_version }}"
+          DOCKERHUB_ORG="${{ inputs.dockerhub_org }}"
+
+          if [ -z "$DOCKERHUB_ORG" ]; then
+            DOCKERHUB_ORG="${{ vars.DOCKERHUB_ORG_PRIMARY }}"
+          fi
+
+          if [ -n "$SUFFIX" ]; then
+            BUILD_TAG="${VERSION}${SUFFIX}-build.${BUILD}"
+          else
+            BUILD_TAG="${VERSION}-build.${BUILD}"
+          fi
+
+          if [ "${{ inputs.include_node_in_tags }}" = "true" ]; then
+            ARCH_TAG="${ARCH}-node${NODE_VERSION}"
+          else
+            ARCH_TAG="${ARCH}"
+          fi
+
+          TAGS="${DOCKERHUB_ORG}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-${ARCH_TAG}"
+
+          if [ "${{ inputs.publish_ghcr }}" = "true" ]; then
+            TAGS="${TAGS}"$'\n'"ghcr.io/${{ inputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${BUILD_TAG}-${ARCH_TAG}"
+          fi
+
+          echo "build_tag=${BUILD_TAG}" >> $GITHUB_OUTPUT
+          echo "arch_tag=${ARCH_TAG}" >> $GITHUB_OUTPUT
+          echo "dockerhub_org=${DOCKERHUB_ORG}" >> $GITHUB_OUTPUT
+          echo "image_tags<<EOF" >> $GITHUB_OUTPUT
+          echo "$TAGS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         if: matrix.arch == 'arm64v8'
@@ -90,6 +154,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Login to GitHub Container Registry
+        if: inputs.publish_ghcr
         uses: docker/login-action@v4.0.0
         with:
           registry: ghcr.io
@@ -108,9 +173,7 @@ jobs:
             VERSION=${{ inputs.version }}
             DATI=${{ inputs.build_number }}
             BUILD=${{ inputs.build_number }}
-          tags: |
-            ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ inputs.version }}-${{ inputs.track }}-build.${{ inputs.build_number }}-${{ matrix.arch }}-node${{ matrix.node_version }}
-            ghcr.io/${{ inputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ inputs.version }}-${{ inputs.track }}-build.${{ inputs.build_number }}-${{ matrix.arch }}-node${{ matrix.node_version }}
+          tags: ${{ steps.tag-config.outputs.image_tags }}
           cache-from: type=gha,scope=build-${{ inputs.track }}-${{ matrix.arch }}-node${{ matrix.node_version }}
           cache-to: type=gha,mode=max,scope=build-${{ inputs.track }}-${{ matrix.arch }}-node${{ matrix.node_version }}
 
@@ -131,6 +194,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Login to GitHub Container Registry
+        if: inputs.publish_ghcr
         uses: docker/login-action@v4.0.0
         with:
           registry: ghcr.io
@@ -143,29 +207,58 @@ jobs:
 
           NODE_VERSION="${{ matrix.node_version }}"
           VERSION="${{ inputs.version }}"
+          SUFFIX="${{ inputs.version_suffix }}"
           BUILD="${{ inputs.build_number }}"
           TRACK="${{ inputs.track }}"
+          MANIFEST_TAGS_CSV="${{ inputs.manifest_tags_csv }}"
+          DOCKERHUB_ORG="${{ inputs.dockerhub_org }}"
 
-          TAGS=(
-            "${TRACK}-node${NODE_VERSION}"
-            "${VERSION}-${TRACK}-node${NODE_VERSION}"
-            "${VERSION}-${TRACK}-build.${BUILD}-node${NODE_VERSION}"
-          )
+          if [ -z "$DOCKERHUB_ORG" ]; then
+            DOCKERHUB_ORG="${{ vars.DOCKERHUB_ORG_PRIMARY }}"
+          fi
 
-          REGISTRIES=(
-            "${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}"
-            "ghcr.io/${{ inputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}"
-          )
+          if [ -n "$SUFFIX" ]; then
+            BUILD_TAG="${VERSION}${SUFFIX}-build.${BUILD}"
+          else
+            BUILD_TAG="${VERSION}-build.${BUILD}"
+          fi
 
-          BUILD_TAG="${VERSION}-${TRACK}-build.${BUILD}"
+          if [ "${{ inputs.include_node_in_tags }}" = "true" ]; then
+            IMAGE_SUFFIX_ARM64="arm64v8-node${NODE_VERSION}"
+            IMAGE_SUFFIX_AMD64="amd64-node${NODE_VERSION}"
+          else
+            IMAGE_SUFFIX_ARM64="arm64v8"
+            IMAGE_SUFFIX_AMD64="amd64"
+          fi
+
+          if [ -n "$MANIFEST_TAGS_CSV" ]; then
+            IFS=',' read -ra TAGS <<< "$MANIFEST_TAGS_CSV"
+          elif [ "${{ inputs.include_node_in_tags }}" = "true" ]; then
+            TAGS=(
+              "${TRACK}-node${NODE_VERSION}"
+              "${VERSION}${SUFFIX}-node${NODE_VERSION}"
+              "${VERSION}${SUFFIX}-build.${BUILD}-node${NODE_VERSION}"
+            )
+          else
+            TAGS=(
+              "latest"
+              "${VERSION}"
+              "${VERSION}-build.${BUILD}"
+            )
+          fi
+
+          REGISTRIES=("${DOCKERHUB_ORG}/${{ vars.DOCKER_IMAGE_NAME }}")
+          if [ "${{ inputs.publish_ghcr }}" = "true" ]; then
+            REGISTRIES+=("ghcr.io/${{ inputs.ghcr_org }}/${{ vars.DOCKER_IMAGE_NAME }}")
+          fi
 
           for TAG in "${TAGS[@]}"; do
             for REGISTRY in "${REGISTRIES[@]}"; do
               echo "[LOG] Creating manifest: ${REGISTRY}:${TAG}"
               docker buildx imagetools create \
                 -t "${REGISTRY}:${TAG}" \
-                "${REGISTRY}:${BUILD_TAG}-arm64v8-node${NODE_VERSION}" \
-                "${REGISTRY}:${BUILD_TAG}-amd64-node${NODE_VERSION}"
+                "${REGISTRY}:${BUILD_TAG}-${IMAGE_SUFFIX_ARM64}" \
+                "${REGISTRY}:${BUILD_TAG}-${IMAGE_SUFFIX_AMD64}"
             done
           done
 
