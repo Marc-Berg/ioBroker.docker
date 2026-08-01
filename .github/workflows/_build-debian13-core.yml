@@ -1,11 +1,11 @@
-# Reusable workflow: Docker image build + manifest creation for beta and dev tracks
+# Reusable workflow: Docker image build + manifest creation for prerelease images
 name: Build Debian 13 Image (core)
 
 on:
   workflow_call:
     inputs:
       track:
-        description: 'Build track identifier (beta or dev)'
+        description: 'Build track identifier (for example beta)'
         required: true
         type: string
       checkout_ref:
@@ -16,11 +16,6 @@ on:
         description: 'Primary recommended Node.js version'
         required: true
         type: string
-      experimental_node_version:
-        description: 'Optional experimental Node.js version (empty or whitespace = skip)'
-        required: false
-        type: string
-        default: ''
       build_number:
         required: true
         type: string
@@ -53,15 +48,8 @@ jobs:
         id: matrix
         run: |
           NODE="${{ inputs.node_version }}"
-          EXP_VERSION="$(printf '%s' '${{ inputs.experimental_node_version }}' | tr -d '[:space:]')"
-
-          if [ -z "$EXP_VERSION" ]; then
-            BUILD_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"}]}'
-            MANIFEST_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended"}]}'
-          else
-            BUILD_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"},{"node_version":"'"$EXP_VERSION"'","node_label":"experimental","platform":"linux/amd64","arch":"amd64"},{"node_version":"'"$EXP_VERSION"'","node_label":"experimental","platform":"linux/arm64/v8","arch":"arm64v8"}]}'
-            MANIFEST_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended"},{"node_version":"'"$EXP_VERSION"'","node_label":"experimental"}]}'
-          fi
+          BUILD_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/amd64","arch":"amd64"},{"node_version":"'"$NODE"'","node_label":"recommended","platform":"linux/arm64/v8","arch":"arm64v8"}]}'
+          MANIFEST_MATRIX='{"include":[{"node_version":"'"$NODE"'","node_label":"recommended"}]}'
 
           echo "build_matrix=$BUILD_MATRIX" >> $GITHUB_OUTPUT
           echo "manifest_matrix=$MANIFEST_MATRIX" >> $GITHUB_OUTPUT

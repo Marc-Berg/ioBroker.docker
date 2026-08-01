@@ -23,7 +23,7 @@ jobs:
         short-description: Official Docker image for ioBroker based on Debian Trixie slim 
         readme-filepath: ./docs/README_docker_hub_buanet.md
 
-    - name: Update Docker Hub Readme (iobroker)
+    - name: Update Docker Hub Readme (ioBroker namespace)
       if: vars.ENABLE_SECONDARY_DEPLOYMENT == 'true'
       uses: peter-evans/dockerhub-description@v5.0.0
       with:
@@ -32,3 +32,4 @@ jobs:
         repository: ${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}
         short-description: Official Docker image for ioBroker based on Debian Trixie slim
         readme-filepath: ./docs/README_docker_hub_iobroker.md
+

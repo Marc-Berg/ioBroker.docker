@@ -2,7 +2,7 @@ name: 'Prepare Build Environment'
 description: 'Prepares build environment with version variables and build metadata'
 inputs:
   version-suffix:
-    description: 'Version suffix (empty, "-dev", or "-beta")'
+    description: 'Version suffix (empty or "-beta")'
     required: false
     default: ''
   node-version:
