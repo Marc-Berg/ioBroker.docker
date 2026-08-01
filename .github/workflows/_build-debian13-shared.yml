@@ -162,7 +162,7 @@ jobs:
           password: ${{ secrets.PACKAGES_PASS }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v7.0.0
+        uses: docker/build-push-action@v7.3.0
         with:
           context: ./debian13
           file: ./debian13/Dockerfile
