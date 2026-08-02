@@ -64,7 +64,7 @@ called_from_iobroker_tree() {
 
   current_pid="$PPID"
   while [[ "$current_pid" =~ ^[0-9]+$ ]] && (( current_pid > 1 )); do
-    parent_args="$(ps -o args= -p "$current_pid" 2> /dev/null || true)"
+    parent_args="$(ps -o args= -ww -p "$current_pid" 2> /dev/null || true)"
     if [[ "$parent_args" == *"iobroker.js-controller"* ]] || [[ "$parent_args" == *"controller.js"* ]] || [[ "$parent_args" == *"javascript.js"* ]]; then
       return 0
     fi
