@@ -24,7 +24,7 @@ jobs:
 
       - name: Docker baseimage check (Debian 13)
         id: baseimage-check-debian13
-        uses: lucacome/docker-image-update-checker@v3.1.0
+        uses: lucacome/docker-image-update-checker@v3.1.1
         with:
           base-image: node:${{ vars.RECOMMENDED_NODE_VERSION }}-trixie-slim
           image: ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
