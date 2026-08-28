@@ -22,14 +22,14 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
 
-      - name: Docker baseimage check (Debian 13)
+      - name: Docker base image check (Node.js + Debian 13)
         id: baseimage-check-debian13
         uses: lucacome/docker-image-update-checker@v3.1.1
         with:
           base-image: node:${{ vars.RECOMMENDED_NODE_VERSION }}-trixie-slim
           image: ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
 
-      - name: Fetch ioBroker and nodejs versions
+      - name: Fetch ioBroker versions
         run: |
           # Fetch sources-dist.json once and cache it
           SOURCES_JSON=$(curl -sL https://download.iobroker.net/sources-dist.json)
@@ -46,10 +46,6 @@ jobs:
           echo "$SOURCES_JSON" | jq -r '."discovery".version' > .github/dependencies/.discovery-version
           echo "[LOG] Fetched discovery version is $(cat .github/dependencies/.discovery-version)"
           
-          curl -sL https://nodejs.org/dist/index.json | \
-          jq -r 'map(select(.version | startswith("v24."))) | .[0].version' > .github/dependencies/.nodejs24-version
-          echo "[LOG] Fetched nodejs v24 version is $(cat .github/dependencies/.nodejs24-version)"
-
       - name: Check for modified files
         id: git-check
         run: echo "modified=$([ -z "`git status --porcelain`" ] && echo "false" || echo "true")" >> $GITHUB_OUTPUT
@@ -64,7 +60,7 @@ jobs:
 
       - name: Logging result
         run: |
-          echo "Debian 13 base image updated = ${{ steps.baseimage-check-debian13.outputs.needs-updating }}"
+          echo "Node.js or Debian 13 base image updated = ${{ steps.baseimage-check-debian13.outputs.needs-updating }}"
           echo "ioBroker version updated = ${{ steps.git-check.outputs.modified }}"
 
       - name: Trigger Build Debian 13 Image (latest)
