@@ -23,7 +23,7 @@ fi
 
 if [ -n "$healthcheck_instance" ]; then
   state_id="system.adapter.${healthcheck_instance}.alive"
-  if ! gosu iobroker iob state get "$state_id" 2> /dev/null | grep -Eq ':[[:space:]]*true([[:space:]]|$)'; then
+  if ! gosu iobroker iob state getvalue "$state_id" 2> /dev/null | grep -qx 'true'; then
     echo "Health status: !!! NOT OK !!! - Adapter instance ${healthcheck_instance} is not alive."
     exit 1
   fi
