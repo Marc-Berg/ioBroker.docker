@@ -15,7 +15,7 @@ elif [ "$health_status" == "maintenance" ]; then
   exit 0
 fi
 
-if pgrep -u iobroker -f 'iobroker.js-controller/controller.js' > /dev/null; then
+if pgrep -u iobroker -f 'iobroker.js-controller' > /dev/null; then
   echo "Health status: OK - Main process (js-controller) is running."
   exit 0
 fi
