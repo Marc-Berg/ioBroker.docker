@@ -596,6 +596,7 @@ shut_down() {
 trap 'shut_down' SIGTERM
 
 # IoBroker start
-gosu iobroker node node_modules/iobroker.js-controller/controller.js &
-controller_pid=$!
-wait "$controller_pid"
+gosu iobroker node node_modules/iobroker.js-controller/controller.js & wait
+
+# Keep the container alive when ioBroker was intentionally stopped for maintenance.
+gosu iobroker tail -f /dev/null
