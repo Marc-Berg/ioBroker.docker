@@ -10,6 +10,7 @@ debug=$DEBUG
 set -u
 
 export DEBIAN_FRONTEND=noninteractive
+declare -a package_list=()
 
 check_package_preq() {
   local pkg="$1"
@@ -31,19 +32,28 @@ check_package_validity() {
     if [[ $debug == "true" ]]; then echo "[DEBUG] New list of packages: $packages"; fi
     echo " "
   fi
+
+  read -r -a package_list <<< "$packages"
+  for package in "${package_list[@]}"; do
+    if [[ "$package" == -* ]]; then
+      echo "Invalid package name: $package"
+      echo "Package names must not start with a dash."
+      return 1
+    fi
+  done
 }
 
 if [[ "$1" == "-install" ]]; then
   echo " "
   check_package_validity
   # Run pre-reqs (e.g. adding external repos) and collect package list
-  for i in $packages; do
+  for i in "${package_list[@]}"; do
     check_package_preq "$i" >> /opt/scripts/setup_packages.log 2>&1
   done
   # Install all packages in a single call
   echo -n "Installing packages ($packages)... "
   apt-get -q update >> /opt/scripts/setup_packages.log 2>&1
-  if ! apt-get -q -y --no-install-recommends install $packages >> /opt/scripts/setup_packages.log 2>&1; then
+  if ! apt-get -q -y --no-install-recommends install -- "${package_list[@]}" >> /opt/scripts/setup_packages.log 2>&1; then
     echo "Failed."
     echo "For more details see \"/opt/scripts/setup_packages.log\"."
   else

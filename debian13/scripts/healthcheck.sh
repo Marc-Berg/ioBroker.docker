@@ -3,18 +3,16 @@
 # bash strict mode
 set -euo pipefail
 
-# Script checks health of running container
+# Script checks that ioBroker is ready to serve requests.
 
-if [ "$(cat /opt/.docker_config/.healthcheck)" == "starting" ]
-then
-  echo "Health status: OK - Startup script is still running."
-  exit 0
-elif [ "$(cat /opt/.docker_config/.healthcheck)" == "maintenance" ]
-then
-  echo "Health status: OK - Container is running in maintenance mode."
-  exit 0
-elif [ "$(ps -fe|grep "[i]obroker.js-controller"|awk '{print $2}')" != "" ]
-then
+health_status=$(cat /opt/.docker_config/.healthcheck 2>/dev/null || true)
+
+if [ "$health_status" != "running" ]; then
+  echo "Health status: NOT READY - Startup script has not completed."
+  exit 1
+fi
+
+if pgrep -u iobroker -f 'iobroker.js-controller/controller.js' > /dev/null; then
   echo "Health status: OK - Main process (js-controller) is running."
   exit 0
 fi

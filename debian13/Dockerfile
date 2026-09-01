@@ -98,7 +98,7 @@ EXPOSE 8081
 WORKDIR /opt/iobroker/
 
 # Healthcheck
-HEALTHCHECK --interval=15s --timeout=5s --retries=5 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=2m --retries=5 \
     CMD ["/bin/bash", "-c", "/opt/scripts/healthcheck.sh"]
 
 # Volume for persistent data
