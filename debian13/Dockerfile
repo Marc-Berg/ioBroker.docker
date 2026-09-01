@@ -1,4 +1,4 @@
-ARG NODE
+ARG NODE=24
 FROM node:${NODE}-trixie-slim
 
 ARG NODE
