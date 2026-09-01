@@ -12,6 +12,7 @@ adminport=$IOB_ADMINPORT
 avahi=$AVAHI
 backitup=$IOB_BACKITUP_EXTDB
 debug=$DEBUG
+healthcheckinstance=$IOB_HEALTHCHECK_INSTANCE
 multihost=$IOB_MULTIHOST
 offlinemode=$OFFLINE_MODE
 objectsdbhost=$IOB_OBJECTSDB_HOST
@@ -95,6 +96,7 @@ if [[ "$adminport" != "" ]]; then echo -n "-----                    " && echo -n
 if [[ "$avahi" != "" ]]; then echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" AVAHI: "$avahi")" && echo " -----"; fi
 if [[ "$debug" != "" ]]; then echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" DEBUG: "$debug")" && echo " -----"; fi
 if [[ "$backitup" != "" ]]; then echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" IOB_BACKITUP_EXTDB: "$backitup")" && echo " -----"; fi
+if [[ "$healthcheckinstance" != "" ]]; then echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" IOB_HEALTHCHECK_INSTANCE: "$healthcheckinstance")" && echo " -----"; fi
 if [[ "$multihost" != "" ]]; then echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" IOB_MULTIHOST: "$multihost")" && echo " -----"; fi
 if [[ "$objectsdbtype" != "" ]]; then echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" IOB_OBJECTSDB_TYPE: "$objectsdbtype")" && echo " -----"; fi
 if [[ "$objectsdbhost" != "" ]]; then echo -n "-----                    " && echo -n "$(printf "%-20s %-28s" IOB_OBJECTSDB_HOST: "$objectsdbhost")" && echo " -----"; fi
@@ -598,5 +600,5 @@ trap 'shut_down' SIGTERM
 # IoBroker start
 gosu iobroker node node_modules/iobroker.js-controller/controller.js & wait
 
-# Fallback process for keeping container running when ioBroker is stopped for maintenance (e.g. js-controller update)
+# Keep the container alive when ioBroker was intentionally stopped for maintenance.
 gosu iobroker tail -f /dev/null

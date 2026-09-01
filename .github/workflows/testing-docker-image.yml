@@ -15,9 +15,25 @@ jobs:
           docker run -d --name iobroker ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}:latest
           echo "[LOG] Done."
           echo ' '
-          echo "[LOG] Waiting for Startup Script..."
-          sleep 60
-          echo "[LOG] Done."
+          echo "[LOG] Waiting for container readiness..."
+          for attempt in {1..48}; do
+            status=$(docker inspect --format '{{.State.Health.Status}}' iobroker)
+            if [ "$status" = "healthy" ]; then
+              echo "[LOG] Container is healthy."
+              break
+            fi
+            if [ "$status" = "unhealthy" ]; then
+              echo "[LOG] Error: Container is unhealthy."
+              docker logs iobroker
+              exit 1
+            fi
+            sleep 5
+          done
+          [ "$(docker inspect --format '{{.State.Health.Status}}' iobroker)" = "healthy" ] || {
+            echo "[LOG] Error: Container did not become healthy in time."
+            docker logs iobroker
+            exit 1
+          }
           echo ' '
           echo "[LOG] Writing Logs..."
           docker logs iobroker >& testrun.log
@@ -25,6 +41,11 @@ jobs:
           echo ' '
           echo "[LOG] Checking Web UI..."
           docker exec iobroker curl -s http://localhost:8081 | grep -q '<title>Admin</title>' || { echo "[LOG] Fehler: Web UI nicht erreichbar."; exit 1; }
+          echo "[LOG] Done."
+          echo ' '
+          echo "[LOG] Verifying graceful shutdown..."
+          docker stop --time 30 iobroker
+          [ "$(docker inspect --format '{{.State.ExitCode}}' iobroker)" = "0" ] || { echo "[LOG] Error: Container did not stop cleanly."; exit 1; }
           echo "[LOG] Done."
           echo ' '
           echo "[LOG] Output testrun.log:"
