@@ -20,7 +20,7 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
         repository: ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}
-        short-description: ioBroker image based on Debian Trixie and Node.js 24. Built from the established ioBroker Docker image architecture.
+        short-description: ioBroker image (Trixie + Node.js 24). Fully compatible with the buanet/iobroker image.
         readme-filepath: ./docs/README_docker_hub_marcberg.md
 
     - name: Update Docker Hub Readme (ioBroker namespace)
@@ -30,6 +30,6 @@ jobs:
         username: ${{ secrets.DOCKER_USER_IOB }}
         password: ${{ secrets.DOCKER_PASS_IOB }}
         repository: ${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}
-        short-description: ioBroker image based on Debian Trixie and Node.js 24. Built from the established ioBroker Docker image architecture.
+        short-description: ioBroker image (Trixie + Node.js 24). Fully compatible with the buanet/iobroker image.
         readme-filepath: ./docs/README_docker_hub_iobroker.md
 
