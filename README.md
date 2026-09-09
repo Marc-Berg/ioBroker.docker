@@ -1,61 +1,58 @@
 # Official Docker Image for ioBroker
 
- <img src="https://github.com/buanet/ioBroker.docker/raw/main/docs/img/iobroker_logo.png" width="600" title="ioBroker Logo">
+ <img src="https://github.com/Marc-Berg/ioBroker.docker/raw/main/docs/img/iobroker_logo.png" width="600" title="ioBroker Logo">
 
-[![Release](https://img.shields.io/github/v/release/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/releases)
-[![Pre-Release)](https://img.shields.io/github/v/tag/buanet/ioBroker.docker?include_prereleases&label=pre-release)](https://github.com/buanet/ioBroker.docker/releases)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/buanet/ioBroker.docker/build-debian12-latest_sep.yml?branch=main)](https://github.com/buanet/ioBroker.docker/actions/workflows/build-debian12-latest_sep.yml)
-[![Github Issues](https://img.shields.io/github/issues/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/issues)
-[![Github Pull Requests](https://img.shields.io/github/issues-pr/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/pulls)
-[![GitHub Discussions](https://img.shields.io/github/discussions/buanet/ioBroker.docker)](https://github.com/buanet/ioBroker.docker/discussions)<br>
-[![Arch](https://img.shields.io/badge/arch-amd64%20%7C%20arm32v7%20%7C%20arm64v8-blue)](https://hub.docker.com/repository/docker/buanet/iobroker)
-[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/buanet/iobroker/latest?style=flat)](https://hub.docker.com/repository/docker/buanet/iobroker)
-[![Docker Pulls](https://img.shields.io/docker/pulls/buanet/iobroker?style=flat)](https://hub.docker.com/repository/docker/buanet/iobroker)
-[![Docker Stars](https://img.shields.io/docker/stars/buanet/iobroker?style=flat)](https://hub.docker.com/repository/docker/buanet/iobroker)<br>
-[![Source](https://img.shields.io/badge/source-github-blue?style=flat)](https://github.com/buanet/ioBroker.docker)
-[![GitHub forks](https://img.shields.io/github/forks/buanet/ioBroker.docker)](https://github.com/buanet/ioBroker.docker/network)
-[![GitHub stars](https://img.shields.io/github/stars/buanet/ioBroker.docker)](https://github.com/buanet/ioBroker.docker/stargazers)
-[![License](https://img.shields.io/github/license/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/blob/master/LICENSE.md)
-[![Donate](https://img.shields.io/badge/donate-paypal-blue?style=flat)](https://paypal.me/buanet)
+[![Release](https://img.shields.io/github/v/release/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/releases)
+[![Pre-Release)](https://img.shields.io/github/v/tag/Marc-Berg/ioBroker.docker?include_prereleases&label=pre-release)](https://github.com/Marc-Berg/ioBroker.docker/releases)
+[![Github Issues](https://img.shields.io/github/issues/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/issues)
+[![Github Pull Requests](https://img.shields.io/github/issues-pr/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/pulls)
+[![GitHub Discussions](https://img.shields.io/github/discussions/Marc-Berg/ioBroker.docker)](https://github.com/Marc-Berg/ioBroker.docker/discussions)<br>
+[![Arch](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-blue)](https://hub.docker.com/r/marcberg/iobroker)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/marcberg/iobroker/latest?style=flat)](https://hub.docker.com/r/marcberg/iobroker)
+[![Docker Pulls](https://img.shields.io/docker/pulls/marcberg/iobroker?style=flat)](https://hub.docker.com/r/marcberg/iobroker)
+[![Docker Stars](https://img.shields.io/docker/stars/marcberg/iobroker?style=flat)](https://hub.docker.com/r/marcberg/iobroker)<br>
+[![Source](https://img.shields.io/badge/source-github-blue?style=flat)](https://github.com/Marc-Berg/ioBroker.docker)
+[![GitHub forks](https://img.shields.io/github/forks/Marc-Berg/ioBroker.docker)](https://github.com/Marc-Berg/ioBroker.docker/network)
+[![GitHub stars](https://img.shields.io/github/stars/Marc-Berg/ioBroker.docker)](https://github.com/Marc-Berg/ioBroker.docker/stargazers)
+[![License](https://img.shields.io/github/license/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/blob/main/LICENSE.md)
 
 The code provided in this repo is used to automatically generate the official Docker Image for ioBroker.
 
-Because this README has become more and more confusing, I decided to convert it into a full documentation and moved it to a ["better place"](https://docs.buanet.de/iobroker-docker-image/docs/).  
+This fork is based on the established ioBroker Docker image architecture. Thank you to Buanet and the previous contributors for the foundation and many years of maintenance.
 
 ## :rocket: Quick links 
 
 Don't know what's ioBroker? :arrow_right: [iobroker.net](https://www.iobroker.net)<br>
 Don't know what's Docker? :arrow_right: [docker.com](https://docker.com)<br>
-Looking for documentation? :arrow_right: [docs.buanet.de](https://docs.buanet.de/iobroker-docker-image/docs/)
+Looking for documentation? :arrow_right: [ioBroker Docker documentation](https://github.com/Marc-Berg/ioBroker.docker#readme)
 
 ## :question: FAQ (frequently asked questions)
 
 ### How to run the image? 
 
-You can find some basic information about the image and how to run it on the [Docker Hub page](https://hub.docker.com/r/buanet/iobroker) or [here](https://github.com/buanet/ioBroker.docker/blob/main/docs/README_docker_hub_buanet.md).
+You can find basic information about the image and how to run it on the [Docker Hub page](https://hub.docker.com/r/marcberg/iobroker) or in [the Docker Hub README](https://github.com/Marc-Berg/ioBroker.docker/blob/main/docs/README_docker_hub_marcberg.md).
 
 ### Is there a more detailed documentation?
 
-You can find a detailed documentation of the image at [docs.buanet.de](https://docs.buanet.de/iobroker-docker-image/docs/). 
+You can find the image documentation in this repository and on [Docker Hub](https://hub.docker.com/r/marcberg/iobroker).
 
 ### Where can I pull the image?
 
 You can pull the Docker image from:
-* [Docker Hub (buanet)](https://hub.docker.com/r/buanet/iobroker)
-* [Docker Hub (iobroker)](https://hub.docker.com/r/iobroker/iobroker)
-* [GitHub Container Repo](https://github.com/buanet/ioBroker.docker/pkgs/container/iobroker)
+* [Docker Hub](https://hub.docker.com/r/marcberg/iobroker)
+* [GitHub Container Registry](https://github.com/Marc-Berg/ioBroker.docker/pkgs/container/iobroker)
 
 ### Where can I get help?
 
-If you have any questions or need help take a look at the [Discussions](https://github.com/buanet/ioBroker.docker/discussions) or join the ioBroker community:
+If you have any questions or need help take a look at the [Discussions](https://github.com/Marc-Berg/ioBroker.docker/discussions) or join the ioBroker community:
 * [ioBroker forum](https://forum.iobroker.net/)
 * [Discord channel](https://discord.gg/5jGWNKnpZ8)
 * [Facebook group](https://www.facebook.com/groups/440499112958264/)
 
 ### How to report an issue or request a feature?
 
-If you think you found an issue let us know by opening a [GitHub Issue](https://github.com/buanet/ioBroker.docker/issues). 
-Please do not use the issues for support questions. Not every error message is worth a new report. Use [Discussions](https://github.com/buanet/ioBroker.docker/discussions) if you are not sure.
+If you think you found an issue let us know by opening a [GitHub Issue](https://github.com/Marc-Berg/ioBroker.docker/issues).
+Please do not use the issues for support questions. Not every error message is worth a new report. Use [Discussions](https://github.com/Marc-Berg/ioBroker.docker/discussions) if you are not sure.
 
 ## :eyes: Miscellaneous
 
@@ -66,8 +63,7 @@ If you want to get the newest features and changes feel free to use/test the bet
 ### Support the project
 
 The easiest way to support this project is to leave me some likes/stars on Github and Docker hub!<br>
-If you want to give something back to the community, feel free to take a look into the [open issues](https://github.com/buanet/ioBroker.docker/issues) or the [ioBroker forum thread](http://forum.iobroker.net/viewtopic.php?f=17&t=5089) and help me answering questions, fixing bugs or adding new features!<br>
-If that doesn't work for you and you want to buy me a pizza instead, you can do this here: <a href="https://www.paypal.me/buanet" target="_blank"><img src="https://github.com/buanet/ioBroker.docker/raw/main/docs/img/pp_logo.png" height="15" width="15"></a><br>
+If you want to give something back to the community, feel free to take a look into the [open issues](https://github.com/Marc-Berg/ioBroker.docker/issues) or the ioBroker community and help answer questions, fix bugs, or add new features!<br>
 Thank you!
 
 ## :memo: Changelog
@@ -78,7 +74,7 @@ Moved to [CHANGELOG.md](CHANGELOG.md).
 
 MIT License
 
-Copyright (c) 2017-2025 André Germann
+Copyright (c) 2017-2025 ioBroker Docker project contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

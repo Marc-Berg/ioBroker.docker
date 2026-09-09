@@ -136,7 +136,7 @@ elif [[ "$debug" == "true" ]]; then
   echo "!!!! This will extend the logging output and may slow down container start. !!!!"
   echo "!!!!          Please make sure to deactivate if no longer needed.           !!!!"
   echo "!!!!     For more information see ioBroker Docker image documentation:      !!!!"
-  echo "!!!!           https://docs.buanet.de/iobroker-docker-image/docs/           !!!!"
+  echo "!!!!           https://github.com/Marc-Berg/ioBroker.docker           !!!!"
   echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
   echo " "
 fi
@@ -208,7 +208,7 @@ elif [[ "$(ls *_backupiobroker.tar.gz 2> /dev/null | wc -l)" != "0" && "$(tar -z
   echo "Since Docker image v8, automatic initial restore is no longer supported!"
   echo "IoBroker will start with a fresh installation, while your backup file will be copied into the backup directory."
   echo "You will be able to restore your backup file manually by using the backitup adapter or the containers maintenance script."
-  echo "For more information see ioBroker Docker image docs (https://docs.buanet.de/iobroker-docker-image/docs/)."
+  echo "For more information see the ioBroker Docker image documentation (https://github.com/Marc-Berg/ioBroker.docker#readme)."
   echo " "
   echo -n "Copying backup file and restoring initial ioBroker installation... "
     mv /opt/iobroker/*.tar.gz /opt/
@@ -319,7 +319,7 @@ elif [[ "$multihost" == "" || "$multihost" == "false" ]]; then
 else
   echo "IOB_MULTIHOST is set, but the value is not valid. Please check your configuration."
   if [[ "$debug" == "true" ]]; then echo "[DEBUG] IOB_MULTIHOST = ""$multihost"; fi
-  echo "For more information see ioBroker Docker image docs (https://docs.buanet.de/iobroker-docker-image/docs/#environment-variables-env)."
+  echo "For more information see the ioBroker Docker image documentation (https://github.com/Marc-Berg/ioBroker.docker#readme)."
   stop_on_error
 fi
 
@@ -352,7 +352,7 @@ else
     echo "$errormsg"
     echo " "
     echo "Please check your configuration and try again."
-    echo "For more information see ioBroker Docker image docs (https://docs.buanet.de/iobroker-docker-image/docs)."
+    echo "For more information see the ioBroker Docker image documentation (https://github.com/Marc-Berg/ioBroker.docker#readme)."
     stop_on_error
   fi
   set -e
@@ -387,7 +387,7 @@ else
     else
       echo "There was a problem detecting the admin instance of your iobroker."
       echo "Make sure the ioBroker installation you use has an admin instance or try again with a fresh installation and restore your configuration."
-      echo "For more details see https://docs.buanet.de/iobroker-docker-image/docs/#restore"
+      echo "For more details see https://github.com/Marc-Berg/ioBroker.docker#readme"
       stop_on_error
     fi
   fi
@@ -450,7 +450,7 @@ echo "$(printf -- '-%.0s' {1..80})"
 echo " "
 
 echo "Some adapters have special requirements/ settings which can be activated by the use of environment variables."
-echo "For more information see ioBroker Docker image docs (https://docs.buanet.de/iobroker-docker-image/docs/)."
+echo "For more information see the ioBroker Docker image documentation (https://github.com/Marc-Berg/ioBroker.docker#readme)."
 echo " "
 
 # Checking ENV for Adminport
@@ -502,7 +502,7 @@ if [[ "$usbdevices" != "" && "$usbdevices" != "none" ]]; then
       else
         echo "Looks like the device \"""$i""\" does not exist."
         echo "Did you mount it correctly by using the \"--device\" option?"
-        echo "For more information see ioBroker Docker image docs (https://docs.buanet.de/iobroker-docker-image/docs/#mounting-usb-devices)."
+        echo "For more information see the ioBroker Docker image documentation (https://github.com/Marc-Berg/ioBroker.docker#readme)."
         stop_on_error
       fi
     done

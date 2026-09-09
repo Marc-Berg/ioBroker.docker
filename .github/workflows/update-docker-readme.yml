@@ -14,14 +14,14 @@ jobs:
     steps:
     - uses: actions/checkout@v7.0.1
 
-    - name: Update Docker Hub Readme (buanet)
+    - name: Update Docker Hub Readme (primary image)
       uses: peter-evans/dockerhub-description@v5.0.0
       with:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
         repository: ${{ vars.DOCKERHUB_ORG_PRIMARY }}/${{ vars.DOCKER_IMAGE_NAME }}
-        short-description: Official Docker image for ioBroker based on Debian Trixie slim 
-        readme-filepath: ./docs/README_docker_hub_buanet.md
+        short-description: ioBroker image based on Debian Trixie and Node.js 24. Built from the established ioBroker Docker image architecture.
+        readme-filepath: ./docs/README_docker_hub_marcberg.md
 
     - name: Update Docker Hub Readme (ioBroker namespace)
       if: vars.ENABLE_SECONDARY_DEPLOYMENT == 'true'
@@ -30,6 +30,6 @@ jobs:
         username: ${{ secrets.DOCKER_USER_IOB }}
         password: ${{ secrets.DOCKER_PASS_IOB }}
         repository: ${{ vars.DOCKERHUB_ORG_SECONDARY }}/${{ vars.DOCKER_IMAGE_NAME }}
-        short-description: Official Docker image for ioBroker based on Debian Trixie slim
+        short-description: ioBroker image based on Debian Trixie and Node.js 24. Built from the established ioBroker Docker image architecture.
         readme-filepath: ./docs/README_docker_hub_iobroker.md
 

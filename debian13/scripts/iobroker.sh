@@ -72,7 +72,7 @@ elif [ "$1" = "start" ] || [ "$1" = "stop" ] || [ "$1" = "restart" ]; then
   # block execution of iobroker start | stop | restart but pass start | stop for adapters
   if [ ! "$2" ]; then
     echo "The execution of this command is blocked as your ioBroker is running inside a Docker container!"
-    echo "For more details see ioBroker Docker image docs (https://docs.buanet.de/iobroker-docker-image/docs/) or use the maintenance script 'maintenance --help'."
+    echo "For more details see the ioBroker Docker image documentation (https://github.com/Marc-Berg/ioBroker.docker#readme) or use the maintenance script 'maintenance --help'."
   else
     # passing all other parameters to iobroker.js but check for execution as root
     iob_run "$@"

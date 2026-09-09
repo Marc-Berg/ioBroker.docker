@@ -1,7 +1,7 @@
 ## Changelog
 
 ### V11.0.1 (14.01.2026)
-* Update InfluxDB repository setup in setup_packages.sh ([#560 by @Marc-Berg](https://github.com/buanet/ioBroker.docker/pull/560))
+* Update InfluxDB repository setup in setup_packages.sh ([#560 by @Marc-Berg](https://github.com/Marc-Berg/ioBroker.docker/pull/560))
 
 ### V11.0.0 (21.07.2025)
 * releasing V11.0.0 instead of V10.1.0 due to the upgrade to recommended node22
@@ -10,7 +10,7 @@
   * restructure build process
   * add node22 tag to beta
   * update readme and docs
-  * add sorted list of backups ([#530 by @Marc-Berg](https://github.com/buanet/ioBroker.docker/pull/530))
+  * add sorted list of backups ([#530 by @Marc-Berg](https://github.com/Marc-Berg/ioBroker.docker/pull/530))
 
 ### v10.0.0 (08.08.2024)
 * v10.0.0-beta.2 (07.08.2024)
@@ -20,7 +20,7 @@
 * v10.0.0-beta.1 (13.07.2024)
   * upgrade node version to recommended node20
   * remove dedicated node setup from dockerfile
-  * improve logging for failed database check ([#411](https://github.com/buanet/ioBroker.docker/issues/411))
+  * improve logging for failed database check ([#411](https://github.com/Marc-Berg/ioBroker.docker/issues/411))
   * rework build process due to problems with github actions
 
 ### v9.1.2 (05.04.2024)
@@ -33,9 +33,9 @@
 * update docs and ci
 * v9.1.0-beta.4 (08.01.2024)
   * dropping arm/v7 support (temporary)
-  * add trap for debugging mode ([#421](https://github.com/buanet/ioBroker.docker/issues/421))
-  * fix ownership of userscripts ([#423 by @EugenMayer](https://github.com/buanet/ioBroker.docker/pull/423))
-  * add strict mode to healthcheck.sh ([#424 by @EugenMayer](https://github.com/buanet/ioBroker.docker/pull/424))
+  * add trap for debugging mode ([#421](https://github.com/Marc-Berg/ioBroker.docker/issues/421))
+  * fix ownership of userscripts ([#423 by @EugenMayer](https://github.com/Marc-Berg/ioBroker.docker/pull/423))
+  * add strict mode to healthcheck.sh ([#424 by @EugenMayer](https://github.com/Marc-Berg/ioBroker.docker/pull/424))
   * fixes for ci process and dockerfile
   * remove deprecated files from repo
 * v9.1.0-beta.3 (23.11.2023)
@@ -44,30 +44,30 @@
 * v9.1.0-beta.2 (06.11.2023)
   * enhance logging/ fix typos
   * add env PACKAGES_UPDATE and remove automatic package updates on first container start
-  * improve setuid/setgid handling during startup ([#397](https://github.com/buanet/ioBroker.docker/issues/397))
-  * move maintenance script registration to dockerfile ([#390](https://github.com/buanet/ioBroker.docker/issues/390))
+  * improve setuid/setgid handling during startup ([#397](https://github.com/Marc-Berg/ioBroker.docker/issues/397))
+  * move maintenance script registration to dockerfile ([#390](https://github.com/Marc-Berg/ioBroker.docker/issues/390))
 * v9.1.0-beta.1 (03.11.2023)
-  * improve maintenance command by symlinking ([#390](https://github.com/buanet/ioBroker.docker/issues/390))
-  * fix restore/ adding backup file selection ([#394](https://github.com/buanet/ioBroker.docker/issues/394))
+  * improve maintenance command by symlinking ([#390](https://github.com/Marc-Berg/ioBroker.docker/issues/390))
+  * fix restore/ adding backup file selection ([#394](https://github.com/Marc-Berg/ioBroker.docker/issues/394))
   * fix calling iob start|stop with parameters
   * enhance logging in iobroker_startup.sh
   * add error handling for user scripts
 
 ### v9.0.1 (10.10.2023)
-* fix issue with avahi setup ([#384](https://github.com/buanet/ioBroker.docker/issues/384); [#385 by @z1r0](https://github.com/buanet/ioBroker.docker/pull/385))
+* fix issue with avahi setup ([#384](https://github.com/Marc-Berg/ioBroker.docker/issues/384); [#385 by @z1r0](https://github.com/Marc-Berg/ioBroker.docker/pull/385))
 * add silent cleanup to setup_avahi.sh
 * add error handling for package updates/ install
-* fix calling iob in iobroker_startup.sh ([#388](https://github.com/buanet/ioBroker.docker/issues/388))
+* fix calling iob in iobroker_startup.sh ([#388](https://github.com/Marc-Berg/ioBroker.docker/issues/388))
 
 ### v9.0.0 (09.10.2023)
 * update official docs
 * v9.0.0-beta.2 (28.09.2023)
-  * fix issue with unlocking features in backitup ([#381](https://github.com/buanet/ioBroker.docker/issues/381))
+  * fix issue with unlocking features in backitup ([#381](https://github.com/Marc-Berg/ioBroker.docker/issues/381))
   * fix issue with fresh initializing iobroker
 * v9.0.0-beta.1 (24.09.2023)
-  * remove special settings script and env for zwave ([#377](https://github.com/buanet/ioBroker.docker/issues/377))
+  * remove special settings script and env for zwave ([#377](https://github.com/Marc-Berg/ioBroker.docker/issues/377))
   * simplify ci/ reduce gh actions
-  * ignore errors in "silent cleanup" on first start ([#369](https://github.com/buanet/ioBroker.docker/issues/369))
+  * ignore errors in "silent cleanup" on first start ([#369](https://github.com/Marc-Berg/ioBroker.docker/issues/369))
   * cleanup/ restructure repo
   * update nodejs setup process
   * update base image to debian 12 (bookworm)
@@ -81,7 +81,7 @@
 * v8.1.0-beta.4 (29.07.2023)
   * fix container restart in maintenance script 
   * fix running maintenance script as iobroker
-  * enhance quoting ([#357 by @dontobi](https://github.com/buanet/ioBroker.docker/pull/357))
+  * enhance quoting ([#357 by @dontobi](https://github.com/Marc-Berg/ioBroker.docker/pull/357))
 * v8.1.0-beta.3 (05.07.2023)
   * fix permission issue for restart container as iobroker user
   * fix issue with js-controller ui upgrade
@@ -93,17 +93,17 @@
   * influx data repo will be added automatically when PACKAGES contains influxdb or influxdb2-cli package
 * v8.1.0-beta.1 (14.04.2023)
   * enhance github actions
-  * enhance log output of maintenance script on restore ([#333](https://github.com/buanet/ioBroker.docker/issues/333))
-  * allow iobroker admin to be disabled at startup ([#332](https://github.com/buanet/ioBroker.docker/issues/332))
-  * allow deletion of objects and states db password with value "none" ([#306](https://github.com/buanet/ioBroker.docker/issues/306))
+  * enhance log output of maintenance script on restore ([#333](https://github.com/Marc-Berg/ioBroker.docker/issues/333))
+  * allow iobroker admin to be disabled at startup ([#332](https://github.com/Marc-Berg/ioBroker.docker/issues/332))
+  * allow deletion of objects and states db password with value "none" ([#306](https://github.com/Marc-Berg/ioBroker.docker/issues/306))
 
 ### v8.0.1 (17.04.2023)
-* fix calling of "iob setup first" on slaves ([#335](https://github.com/buanet/ioBroker.docker/issues/335)) 
+* fix calling of "iob setup first" on slaves ([#335](https://github.com/Marc-Berg/ioBroker.docker/issues/335))
 
 ### v8.0.0 (20.03.2023)
 * update readme and docs
 * remove manifests
-* enhance dockerfile, reduce image size ([#323](https://github.com/buanet/ioBroker.docker/issues/323))
+* enhance dockerfile, reduce image size ([#323](https://github.com/Marc-Berg/ioBroker.docker/issues/323))
 * v8.0.0-beta.1 (20.02.2023)
   * upgrade node version to recommended node18  
   * rewrite of multihost setup handling
@@ -111,8 +111,8 @@
   * enhance initial packages install/ update
   * enhance logging and error handling
   * add volume instruction to dockerfile
-  * add support for password protected custom objects and states db ([#306](https://github.com/buanet/ioBroker.docker/issues/306))
-  * add support for redis sentinel ([#311](https://github.com/buanet/ioBroker.docker/issues/311))
+  * add support for password protected custom objects and states db ([#306](https://github.com/Marc-Berg/ioBroker.docker/issues/306))
+  * add support for redis sentinel ([#311](https://github.com/Marc-Berg/ioBroker.docker/issues/311))
   * add restore command to maintenance script
   * add database connection check at startup 
   * remove initial restore feature
@@ -123,16 +123,16 @@
   * fix restart option in maintenance script
   * add error handling for usb devices
   * add aliases to maintenance script
-  * add env PERMISSION_CHECK ([#251](https://github.com/buanet/ioBroker.docker/issues/251))
+  * add env PERMISSION_CHECK ([#251](https://github.com/Marc-Berg/ioBroker.docker/issues/251))
   * add some more DEBUG messages to log
   * add env IOB_BACKITUP_EXTDB to unlock external db backups in backitup adapter
   * reorder dockerfile steps to fulfill ioBroker Docker check
 
 ### v7.1.2 (08.11.2022)
-* fix hostname check ([#293](https://github.com/buanet/ioBroker.docker/issues/293))
+* fix hostname check ([#293](https://github.com/Marc-Berg/ioBroker.docker/issues/293))
 
 ### v7.1.1 (01.11.2022)
-* fix setting gid of iobroker group ([#289](https://github.com/buanet/ioBroker.docker/issues/289))
+* fix setting gid of iobroker group ([#289](https://github.com/Marc-Berg/ioBroker.docker/issues/289))
 
 ### v7.1.0 (31.10.2022)
 * fix [build action node issue](https://forum.iobroker.net/topic/59518/docker-image-7-0-1-auf-node-js-14/14?_=1667244004952) for iobroker/iobroker repo
@@ -151,11 +151,11 @@
 * update docs & ci
 * v7.0.0-beta.1 (16.06.2022)
   * upgrade node version to recommended node16 
-  * rewrite maintenance script ([#243 by @agross](https://github.com/buanet/ioBroker.docker/pull/243))
-  * enhance container shutdown on SIGTERM ([as requested with #264 by @buzz0r](https://github.com/buanet/ioBroker.docker/pull/264))
+  * rewrite maintenance script ([#243 by @agross](https://github.com/Marc-Berg/ioBroker.docker/pull/243))
+  * enhance container shutdown on SIGTERM ([as requested with #264 by @buzz0r](https://github.com/Marc-Berg/ioBroker.docker/pull/264))
   * enhance startup script logging
   * enhance logging for avahi & zwave install scripts
-  * add new env for offline mode (fixes [#255](https://github.com/buanet/ioBroker.docker/issues/255))
+  * add new env for offline mode (fixes [#255](https://github.com/Marc-Berg/ioBroker.docker/issues/255))
 
 ### v6.1.0 (2022-03-01)
 * v6.1.0-beta.2 (2022-02-11)
@@ -163,10 +163,10 @@
   * enhance shutdown/ prevent warnings on upgrade
   * remove hostname check for multihost slave
   * enhance startup script logging
-  * add breaks and enhance maintenance script (fixes [#233](https://github.com/buanet/ioBroker.docker/issues/233))
+  * add breaks and enhance maintenance script (fixes [#233](https://github.com/Marc-Berg/ioBroker.docker/issues/233))
 * v6.1.0-beta.1 (2021-12-23)
-  * some more corrections in maintenance script ([#232 by @agross](https://github.com/buanet/ioBroker.docker/pull/232)) 
-  * add auto confirm parameter to upgrade function in maintenance script ([#229 by @thost96](https://github.com/buanet/ioBroker.docker/pull/229))
+  * some more corrections in maintenance script ([#232 by @agross](https://github.com/Marc-Berg/ioBroker.docker/pull/232))
+  * add auto confirm parameter to upgrade function in maintenance script ([#229 by @thost96](https://github.com/Marc-Berg/ioBroker.docker/pull/229))
   * add alias "m" for maintenance script
 
 ### v6.0.0 (2021-12-09)
@@ -176,7 +176,7 @@
   * add beta-node16 tag for beta testing node16
   * update documentation
 * v5.3.0-beta1 (2021-10-07)
-  * add check (installed) PACKAGES on startup (fixes [#201](https://github.com/buanet/ioBroker.docker/issues/201))
+  * add check (installed) PACKAGES on startup (fixes [#201](https://github.com/Marc-Berg/ioBroker.docker/issues/201))
   * add packages for discovery adapter
   * add packages for backitup adapter
   * reorganize Dockerfile
@@ -202,7 +202,7 @@
   * removing couchdb option for states db (no longer supported)
 * v5.2.0-beta1 (2021-05-04)
   * added upgrade parameter to maintenance script
-  * added expose for default admin ui port (fixes [#172](https://github.com/buanet/ioBroker.docker/issues/172))
+  * added expose for default admin ui port (fixes [#172](https://github.com/Marc-Berg/ioBroker.docker/issues/172))
   * added short form for maintenance script
 * v5.2.0-beta (2021-04-02)
   * some renaming to enhance automated build
@@ -253,7 +253,7 @@
 ### v4.1.0 (2020-01-17)
 * improved readme.md
 * v4.0.3-beta (2020-01-06)
-  * added support to restore backup on startup ([#56 by @duffbeer2000](https://github.com/buanet/ioBroker.docker/pull/56))
+  * added support to restore backup on startup ([#56 by @duffbeer2000](https://github.com/Marc-Berg/ioBroker.docker/pull/56))
   * small fixes according to "docker best practices"
 * v4.0.2-beta (2019-12-10)
   * ~~added env for activating redis~~
@@ -273,13 +273,13 @@
 * v3.1.2-beta (2019-09-03)
   * using node 10 instead of node 8
 * v3.1.1-beta (2019-09-02)
-  * adding env for setting uid/ gid for iobroker-user ([#33 by @mplogas](https://github.com/buanet/ioBroker.docker/pull/33))
+  * adding env for setting uid/ gid for iobroker-user ([#33 by @mplogas](https://github.com/Marc-Berg/ioBroker.docker/pull/33))
 
 ### v3.1.0 (2019-08-21)
 * v3.0.3-beta (2019-08-21)
   * switching base image from "debian:latest" to "debian:stretch"
 * v3.0.2-beta (2019-06-13)
-  * using gosu instead of sudo ([#26 by @SchumyHao](https://github.com/buanet/ioBroker.docker/pull/26))
+  * using gosu instead of sudo ([#26 by @SchumyHao](https://github.com/Marc-Berg/ioBroker.docker/pull/26))
   * changing output of ioBroker logging
 * v3.0.1-beta (2019-05-18)
   * ~~switching back to iobroker-daemon for startup~~

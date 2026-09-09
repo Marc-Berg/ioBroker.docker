@@ -1,45 +1,50 @@
-<img src="https://github.com/buanet/ioBroker.docker/raw/main/docs/img/iobroker_logo.png" width="600" title="ioBroker Logo">
+<img src="https://github.com/Marc-Berg/ioBroker.docker/raw/main/docs/img/iobroker_logo.png" width="600" title="ioBroker Logo">
 
-[![Release](https://img.shields.io/github/v/release/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/releases)
-[![Pre-Release)](https://img.shields.io/github/v/tag/buanet/ioBroker.docker?include_prereleases&label=pre-release)](https://github.com/buanet/ioBroker.docker/releases)
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/buanet/ioBroker.docker/build-debian12-latest_sep.yml?branch=main)](https://github.com/buanet/ioBroker.docker/actions/workflows/build-debian12-latest_sep.yml)
-[![Github Issues](https://img.shields.io/github/issues/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/issues)
-[![Github Pull Requests](https://img.shields.io/github/issues-pr/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/pulls)
-[![GitHub Discussions](https://img.shields.io/github/discussions/buanet/ioBroker.docker)](https://github.com/buanet/ioBroker.docker/discussions)<br>
-[![Arch](https://img.shields.io/badge/arch-amd64%20%7C%20arm32v7%20%7C%20arm64v8-blue)](https://hub.docker.com/repository/docker/buanet/iobroker)
-[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/buanet/iobroker/latest?style=flat)](https://hub.docker.com/repository/docker/buanet/iobroker)
-[![Docker Pulls](https://img.shields.io/docker/pulls/buanet/iobroker?style=flat)](https://hub.docker.com/repository/docker/buanet/iobroker)
-[![Docker Stars](https://img.shields.io/docker/stars/buanet/iobroker?style=flat)](https://hub.docker.com/repository/docker/buanet/iobroker)<br>
-[![Source](https://img.shields.io/badge/source-github-blue?style=flat)](https://github.com/buanet/ioBroker.docker)
-[![GitHub forks](https://img.shields.io/github/forks/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/network)
-[![GitHub stars](https://img.shields.io/github/stars/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/stargazers)
-[![License](https://img.shields.io/github/license/buanet/ioBroker.docker?style=flat)](https://github.com/buanet/ioBroker.docker/blob/master/LICENSE.md)
-[![Donate](https://img.shields.io/badge/donate-paypal-blue?style=flat)](https://paypal.me/buanet)
+[![Release](https://img.shields.io/github/v/release/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/releases)
+[![Pre-Release)](https://img.shields.io/github/v/tag/Marc-Berg/ioBroker.docker?include_prereleases&label=pre-release)](https://github.com/Marc-Berg/ioBroker.docker/releases)
+[![Github Issues](https://img.shields.io/github/issues/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/issues)
+[![Github Pull Requests](https://img.shields.io/github/issues-pr/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/pulls)
+[![GitHub Discussions](https://img.shields.io/github/discussions/Marc-Berg/ioBroker.docker)](https://github.com/Marc-Berg/ioBroker.docker/discussions)<br>
+[![Arch](https://img.shields.io/badge/arch-amd64%20%7C%20arm64-blue)](https://hub.docker.com/r/marcberg/iobroker)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/marcberg/iobroker/latest?style=flat)](https://hub.docker.com/r/marcberg/iobroker)
+[![Docker Pulls](https://img.shields.io/docker/pulls/marcberg/iobroker?style=flat)](https://hub.docker.com/r/marcberg/iobroker)
+[![Docker Stars](https://img.shields.io/docker/stars/marcberg/iobroker?style=flat)](https://hub.docker.com/r/marcberg/iobroker)<br>
+[![Source](https://img.shields.io/badge/source-github-blue?style=flat)](https://github.com/Marc-Berg/ioBroker.docker)
+[![GitHub forks](https://img.shields.io/github/forks/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/network)
+[![GitHub stars](https://img.shields.io/github/stars/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/stargazers)
+[![License](https://img.shields.io/github/license/Marc-Berg/ioBroker.docker?style=flat)](https://github.com/Marc-Berg/ioBroker.docker/blob/main/LICENSE.md)
+
+# marcberg/iobroker
+
+ioBroker image based on Debian Trixie and Node.js 24. This image keeps the established ioBroker Docker workflow, including persistent `/opt/iobroker` storage and runtime package customization through environment variables.
+
+Docker Hub: [marcberg/iobroker](https://hub.docker.com/r/marcberg/iobroker)<br>
+Source: [github.com/Marc-Berg/ioBroker.docker](https://github.com/Marc-Berg/ioBroker.docker)
+
+This project is based on the established ioBroker Docker image architecture. Thank you to Buanet and the previous contributors for the foundation and years of maintenance that made this project possible.
 
 # Important note
 
-New major image versions (e.g. v6, v7, v8) usually include a new major version of node! Although js-controller should handle this kind of upgrade fine, in some cases this still results in problems with some adapters. To avoid having trouble with this major version upgrades, it is always a good move to upgrade your container manually with backup and restore procedure. For more details please see the maintenance part of the [ioBroker Docker image docs](https://docs.buanet.de/iobroker-docker-image/docs/#maintenance).
+New major image versions may include a new major Node.js version. Although js-controller should handle this kind of upgrade, some adapters may require a manual backup and restore procedure. See the maintenance documentation in this repository for details.
 
 # Quick reference
 
-* Maintained by: [buanet](https://github.com/buanet) and [ioBroker](https://github.com/ioBroker)
+* Maintained by: [Marc-Berg](https://github.com/Marc-Berg) and [ioBroker](https://github.com/ioBroker)
 * Where to get support: [ioBroker forum](https://forum.iobroker.net/), [Discord channel](https://discord.gg/5jGWNKnpZ8), [Facebook group](https://www.facebook.com/groups/440499112958264)
-* Where to report issues: [Github Repository Issues](https://github.com/buanet/ioBroker.docker/issues)
+* Where to report issues: [Github Repository Issues](https://github.com/Marc-Berg/ioBroker.docker/issues)
 * Supported architectures: amd64, arm32v7, arm64v8
-* Changelog: [Github Repository Changelog](https://github.com/buanet/ioBroker.docker/blob/main/CHANGELOG.md)
-* Source code: [Github Repository](https://github.com/buanet/ioBroker.docker)
-* All other questions should be answered here: [ioBroker Docker image docs](https://docs.buanet.de/iobroker-docker-image/docs/) or [iobroker.net](https://www.iobroker.net/)
+* Changelog: [Github Repository Changelog](https://github.com/Marc-Berg/ioBroker.docker/blob/main/CHANGELOG.md)
+* Source code: [Github Repository](https://github.com/Marc-Berg/ioBroker.docker)
+* All other questions should be answered here: [ioBroker Docker image documentation](https://github.com/Marc-Berg/ioBroker.docker#readme) or [iobroker.net](https://www.iobroker.net/)
 
 # Supported tags
 
 It is highly recommended not to use the `latest` tag for production, especially when using any kind of automated update procedure like watchtower. Please use the `latest-v[major_version]` tag instead.
 
-### Node 22 versions
-* [`v11.0.1`](https://github.com/buanet/ioBroker.docker/blob/v11.0.1/debian12/Dockerfile), [`latest-v11`](https://github.com/buanet/ioBroker.docker/blob/v11.0.1/debian12/Dockerfile), [`latest`](https://github.com/buanet/ioBroker.docker/blob/v11.0.1/debian12/Dockerfile)
-* [`v11.0.0`](https://github.com/buanet/ioBroker.docker/blob/v11.0.0/debian12/Dockerfile)
-
-### Node 20 versions
-* [`v10.0.0`](https://github.com/buanet/ioBroker.docker/blob/v10.0.0/debian12/Dockerfile), [`latest-v10`](https://github.com/buanet/ioBroker.docker/blob/v10.0.0/debian12/Dockerfile), [`latest`](https://github.com/buanet/ioBroker.docker/blob/v10.0.0/debian12/Dockerfile)
+### Current image
+* Debian Trixie with Node.js 24
+* [`latest-v12`](https://hub.docker.com/r/marcberg/iobroker)
+* [`latest`](https://hub.docker.com/r/marcberg/iobroker)
 
 # What is ioBroker?
 
@@ -54,7 +59,7 @@ For further details please check out [iobroker.net](https://www.iobroker.net).
 To quickly try out ioBroker in Docker, simply run:
 
 ```
-docker run -p 8081:8081 --name iobroker -h iobroker buanet/iobroker
+docker run -p 8081:8081 --name iobroker -h iobroker marcberg/iobroker
 ```
 
 **Note:**  
@@ -68,7 +73,7 @@ For a persistent and production-ready setup, use Docker Compose and mount a volu
 services:
   iobroker:
     container_name: iobroker
-    image: buanet/iobroker
+    image: marcberg/iobroker
     hostname: iobroker
     restart: always
     ports:
@@ -107,7 +112,7 @@ You can use environment variables to automatically configure your ioBroker conta
 ### Application Configuration
 
 - `IOB_ADMINPORT` (optional, default: 8081) – Set ioBroker admin port on startup
-- `IOB_BACKITUP_EXTDB` (optional) – Set `true` to enable external database backup in the Backitup adapter ([see docs](https://docs.buanet.de/iobroker-docker-image/docs/#backup))
+- `IOB_BACKITUP_EXTDB` (optional) – Set `true` to enable external database backup in the Backitup adapter.
 - `IOB_MULTIHOST` (optional) – Set to "master" or "slave" for multihost support (requires additional config for objectsdb and statesdb)
 - `IOB_OBJECTSDB_TYPE` (optional, default: jsonl) – Type of objects DB: "jsonl", "file" (deprecated), or "redis"
 - `IOB_OBJECTSDB_HOST` (optional, default: 127.0.0.1) – Host for objects DB (comma-separated for Redis Sentinel)

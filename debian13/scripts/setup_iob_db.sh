@@ -214,7 +214,7 @@ config_error_output() {
   echo " "
   echo "Something went wrong. Looks like at least one parameter defining the custom db connection was not set properly or is missing."
   echo "Please check your configuration and try again."
-  echo "For more information see ioBroker Docker Image Docs (https://docs.buanet.de/iobroker-docker-image/docs/)."
+  echo "For more information see the ioBroker Docker image documentation (https://github.com/Marc-Berg/ioBroker.docker#readme)."
 }
 
 # parameter check
