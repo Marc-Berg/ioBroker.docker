@@ -277,9 +277,8 @@ elif [[ "$node_major_cached" != "$node_major_current" ]]; then
   set -e
   if [[ "$return" -ne 0 ]]; then
     echo "Failed."
-    echo "For more details see \"/opt/iobroker/log/npm_rebuild.log\"."
-    echo "Please check your configuration and try again."
-    stop_on_error
+    echo "Some native modules (e.g. of individual adapters) might not work until this is fixed manually."
+    echo "This does not stop ioBroker from starting. For more details see \"/opt/iobroker/log/npm_rebuild.log\"."
   else
     echo "Done."
   fi
