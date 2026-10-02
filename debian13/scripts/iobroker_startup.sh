@@ -270,9 +270,11 @@ elif [[ "$node_major_cached" != "$node_major_current" ]]; then
   echo "Node.js major version changed from v""$node_major_cached"" to v""$node_major_current""."
   echo "Native Node.js modules need to be rebuilt to match the new Node.js ABI."
   mkdir -p /opt/iobroker/log
+  # Approve any pending npm install-scripts (npm >= 11.x blocks them by default), else setup/postinstall scripts (e.g. js-controller itself, esbuild) silently get skipped
+  gosu iobroker npm install-scripts approve --all > /opt/iobroker/log/npm_rebuild.log 2>&1 || true
   echo -n "Rebuilding native Node.js modules (This might take a while! Please be patient!)... "
   set +e
-  gosu iobroker npm rebuild > /opt/iobroker/log/npm_rebuild.log 2>&1
+  gosu iobroker npm rebuild >> /opt/iobroker/log/npm_rebuild.log 2>&1
   return=$?
   set -e
   if [[ "$return" -ne 0 ]]; then
