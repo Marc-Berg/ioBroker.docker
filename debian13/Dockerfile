@@ -61,6 +61,11 @@ RUN mkdir /opt/.docker_config \
     && curl -sL https://iobroker.net/install.sh -o install.sh \
     && bash install.sh \
     && rm install.sh \
+    # npm >= 11 blocks install/postinstall scripts by default (e.g. js-controller's own setup script); approve and re-run them
+    && cd /opt/iobroker \
+    && (npm install-scripts approve --all || true) \
+    && npm install \
+    && cd / \
     && iobroker unsetup -y \
     && echo "true" > /opt/iobroker/.fresh_install \
     && tar -cf /opt/initial_iobroker.tar /opt/iobroker \

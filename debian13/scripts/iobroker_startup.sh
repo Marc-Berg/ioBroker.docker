@@ -274,7 +274,8 @@ elif [[ "$node_major_cached" != "$node_major_current" ]]; then
   gosu iobroker npm install-scripts approve --all > /opt/iobroker/log/npm_rebuild.log 2>&1 || true
   echo -n "Rebuilding native Node.js modules (This might take a while! Please be patient!)... "
   set +e
-  gosu iobroker npm rebuild >> /opt/iobroker/log/npm_rebuild.log 2>&1
+  # "npm install" (not just "rebuild") also repairs modules/files left incomplete by a previously blocked install-script
+  gosu iobroker npm install >> /opt/iobroker/log/npm_rebuild.log 2>&1
   return=$?
   set -e
   if [[ "$return" -ne 0 ]]; then
