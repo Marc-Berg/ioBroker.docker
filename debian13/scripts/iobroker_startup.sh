@@ -275,7 +275,8 @@ elif [[ "$node_major_cached" != "$node_major_current" ]]; then
   echo -n "Rebuilding native Node.js modules (This might take a while! Please be patient!)... "
   set +e
   # "npm install" (not just "rebuild") also repairs modules/files left incomplete by a previously blocked install-script
-  gosu iobroker npm install >> /opt/iobroker/log/npm_rebuild.log 2>&1
+  # --engine-strict=false: some adapter dependencies declare a conservative "engines.node" range not yet covering the newest major; without this npm aborts the whole install on the first mismatch
+  gosu iobroker npm install --engine-strict=false >> /opt/iobroker/log/npm_rebuild.log 2>&1
   return=$?
   set -e
   if [[ "$return" -ne 0 ]]; then

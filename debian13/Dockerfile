@@ -62,9 +62,10 @@ RUN mkdir /opt/.docker_config \
     && bash install.sh \
     && rm install.sh \
     # npm >= 11 blocks install/postinstall scripts by default (e.g. js-controller's own setup script); approve and re-run them
+    # --engine-strict=false: some adapter dependencies declare a conservative "engines.node" range not yet covering the newest major
     && cd /opt/iobroker \
     && (npm install-scripts approve --all || true) \
-    && npm install \
+    && npm install --engine-strict=false \
     && cd / \
     && iobroker unsetup -y \
     && echo "true" > /opt/iobroker/.fresh_install \
