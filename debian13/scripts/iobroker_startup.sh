@@ -261,11 +261,12 @@ fi
 echo " "
 
 # Rebuilding native Node.js modules on Node.js major version changes (ABI compatibility)
+# Marker lives in the persistent "/opt/iobroker" volume, not in "/opt/.docker_config" (reset on container recreation)
 node_major_current=$(node -v | grep -oP '(?<=^v)[0-9]+')
-node_major_cached=$(cat /opt/.docker_config/.node_major_version 2>/dev/null || echo "")
-if [[ -f /opt/.docker_config/.first_run ]]; then
-  if [[ "$debug" == "true" ]]; then echo "[DEBUG] First run of this container. Caching current Node.js major version (""$node_major_current"")."; fi
-elif [[ "$node_major_cached" != "" && "$node_major_cached" != "$node_major_current" ]]; then
+node_major_cached=$(cat /opt/iobroker/.node_major_version 2>/dev/null || echo "")
+if [[ "$node_major_cached" == "" ]]; then
+  if [[ "$debug" == "true" ]]; then echo "[DEBUG] No cached Node.js major version found. Caching current Node.js major version (""$node_major_current"")."; fi
+elif [[ "$node_major_cached" != "$node_major_current" ]]; then
   echo "Node.js major version changed from v""$node_major_cached"" to v""$node_major_current""."
   echo "Native Node.js modules need to be rebuilt to match the new Node.js ABI."
   mkdir -p /opt/iobroker/log
@@ -284,7 +285,8 @@ elif [[ "$node_major_cached" != "" && "$node_major_cached" != "$node_major_curre
   fi
   echo " "
 fi
-echo "$node_major_current" > /opt/.docker_config/.node_major_version
+echo "$node_major_current" > /opt/iobroker/.node_major_version
+chown "$setuid":"$setgid" /opt/iobroker/.node_major_version
 
 # Checking multihost and db setup
 if [[ "$multihost" == "master" || "$multihost" == "slave" ]]; then
