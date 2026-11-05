@@ -1,5 +1,14 @@
 ## Changelog
 
+### V12.0.1 (05.11.2026)
+* first stable release of the V12 line, releasing V12.0.1 because the tag V12.0.0 predates the beta releases and was never published
+* update base image to Debian 13 (Trixie) and Node.js 24 (`node:24-trixie-slim`)
+* only amd64 and arm64 images are built
+* add detached relaunch and process tree detection to the maintenance script
+* fix UID/GID check, hostname caching and Linux package installation in the startup scripts
+* harden Docker runtime and build workflow
+* rework build workflows (beta/dev/latest builds, release tags, version checks)
+
 ### V11.0.1 (14.01.2026)
 * Update InfluxDB repository setup in setup_packages.sh ([#560 by @Marc-Berg](https://github.com/Marc-Berg/ioBroker.docker/pull/560))
 
