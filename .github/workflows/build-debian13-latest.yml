@@ -33,12 +33,12 @@ jobs:
           echo "release_tag=$RELEASE_TAG" >> $GITHUB_OUTPUT
           echo "[LOG] Release tag from event/ref: $RELEASE_TAG"
 
-      - name: Checkout repo (main for build number commit)
+      - name: Checkout repo (default branch for build number commit)
         uses: actions/checkout@v7.0.1
         with:
           repository: '${{ vars.REPO_OWNER }}/${{ vars.REPO_NAME }}'
           token: ${{ secrets.ACTIONS_PAT }}
-          ref: main
+          ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
 
       - name: Generate build number

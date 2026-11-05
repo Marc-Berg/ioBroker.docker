@@ -5,6 +5,6 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    target-branch: "trixie-node24"
+    target-branch: "main"
     ignore:
       - dependency-name: "express"
